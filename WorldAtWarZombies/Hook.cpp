@@ -40,7 +40,7 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 }
 
 // Setting up SetStreamSource hook
-typedef HRESULT (APIENTRY* SetStreamSource_Template)(
+typedef HRESULT(APIENTRY* SetStreamSource_Template)(
 	UINT                   StreamNumber,
 	IDirect3DVertexBuffer9** ppStreamData,
 	UINT* pOffsetInBytes,
@@ -54,8 +54,8 @@ HRESULT APIENTRY GetStreamSource_Hook(
 	UINT* pStride
 )
 {
-	printf("Set Stream Source Hit!\n");
-	printf("Parameters: %u, %X, %X, %X\n\n", StreamNumber,ppStreamData,pOffsetInBytes,pStride);
+	//printf("Set Stream Source Hit!\n");
+	//printf("Parameters: %u, %X, %X, %X\n\n", StreamNumber,ppStreamData,pOffsetInBytes,pStride);
 	return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes, pStride);
 }
 
@@ -63,34 +63,65 @@ HRESULT APIENTRY GetStreamSource_Hook(
 /*
 	brief: Creates and initializes the DirectX hooks
 */
-void Hook::Hook_DirectX()
+bool Hook::Hook_DirectX()
 {
 	MH_Initialize();
 
 	GetD3D9Device(d3d9Device, sizeof(d3d9Device));
 
-	printf("\nEnd Scene Address: %X\n", (uintptr_t)d3d9Device[42]);
-
 	EndSceneFunction = d3d9Device[42];
 
-	MH_CreateHook(EndSceneFunction, &EndScene_Hook, reinterpret_cast<LPVOID*>(&EndScene_Original));
+	printf("\nEnd Scene Address: %X", (uintptr_t)EndSceneFunction);
 
-	MH_EnableHook(EndSceneFunction);
+	if (MH_CreateHook(EndSceneFunction, &EndScene_Hook, reinterpret_cast<LPVOID*>(&EndScene_Original)) != MH_OK)
+	{
+		printf("Error Creating EndSceneFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
 
-	printf("\nReset Address: %X\n", (uintptr_t)d3d9Device[16]);
+	if (MH_EnableHook(EndSceneFunction) != MH_OK)
+	{
+		printf("Error Enabling EndSceneFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
 
 	ResetFunction = d3d9Device[16];
 
-	MH_CreateHook(ResetFunction, &Reset_Hook, reinterpret_cast<LPVOID*>(&Reset_Original));
+	printf("\nReset Address: %X\n", (uintptr_t)ResetFunction);
 
-	MH_EnableHook(ResetFunction);
+	if (MH_CreateHook(ResetFunction, &Reset_Hook, reinterpret_cast<LPVOID*>(&Reset_Original)) != MH_OK)
+	{
+		printf("Error Creating ResetFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
+
+	if (MH_EnableHook(ResetFunction) != MH_OK)
+	{
+		printf("Error Enabling ResetFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
 
 	SetStreamSourceFunction = d3d9Device[100];
+
 	printf("\nSetStreamSourceFunction Address: %X\n", (uintptr_t)SetStreamSourceFunction);
 
-	MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook, reinterpret_cast<LPVOID*>(&GetStreamSource_Original));
+	if (MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook, reinterpret_cast<LPVOID*>(&GetStreamSource_Original)) != MH_OK)
+	{
+		printf("Error Creating SetStreamSourceFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
 
-	MH_EnableHook(SetStreamSourceFunction);
+	if (MH_EnableHook(SetStreamSourceFunction) != MH_OK)
+	{
+		printf("Error Enabling SetStreamSourceFunction Hook! Exiting.\n");
+		Unhook_DirectX();
+		return 0;
+	}
 }
 
 /*
@@ -98,9 +129,7 @@ void Hook::Hook_DirectX()
 */
 void Hook::Unhook_DirectX()
 {
-	MH_DisableHook(EndSceneFunction);
-	MH_DisableHook(ResetFunction);
-	MH_DisableHook(SetStreamSourceFunction);
+	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
 }
 

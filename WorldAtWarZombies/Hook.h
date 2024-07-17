@@ -12,7 +12,7 @@ public:
 	static int windowHeight, windowWidth;
 	static HRESULT APIENTRY EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice);
 	static HRESULT Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters);
-	static void Hook_DirectX();
+	static bool Hook_DirectX();
 	static void Unhook_DirectX();
 private:
 	static HWND GetProcessWindow();
