@@ -3,6 +3,12 @@
 class Hook
 {
 public:
+	static HWND window;
+	static void* d3d9Device[119];
+	static void* EndSceneFunction;
+	static void* ResetFunction;
+	static IDirect3DDevice9* pD3DDevice;
+	static int windowHeight, windowWidth;
 	static HRESULT APIENTRY EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice);
 	static HRESULT Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters);
 	static void Hook_DirectX();

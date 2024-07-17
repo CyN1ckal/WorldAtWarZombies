@@ -1,13 +1,17 @@
 #include "pch.h"
 
+// Global Variables
 bool bInit = false;
-void* d3d9Device[119];
-void* EndSceneFunction;
-void* ResetFunction;
-IDirect3DDevice9* pD3DDevice;
-int windowHeight, windowWidth;
-HWND window;
 
+// Declarations from the static class
+HWND Hook::window;
+void* Hook::d3d9Device[119];
+void* Hook::EndSceneFunction;
+void* Hook::ResetFunction;
+IDirect3DDevice9* Hook::pD3DDevice;
+int Hook::windowHeight, Hook::windowWidth;
+
+// Setting up EndScene hook
 typedef HRESULT(APIENTRY* EndScene_Template)(LPDIRECT3DDEVICE9 pDevice);
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
@@ -21,11 +25,10 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pDevice);
 
-	printf("End Scene Hook!\n");
-
 	return EndScene_Original(pDevice);
 }
 
+// Setting up Reset hook
 typedef HRESULT(APIENTRY* Reset_Template)(D3DPRESENT_PARAMETERS* pPresentationParameters);
 Reset_Template Reset_Original = nullptr;
 HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
@@ -33,13 +36,16 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 	return Reset_Original(pPresentationParameters);
 }
 
+/*
+	brief: Creates and initializes the DirectX hooks
+*/
 void Hook::Hook_DirectX()
 {
 	MH_Initialize();
 
 	GetD3D9Device(d3d9Device, sizeof(d3d9Device));
 
-	printf("\nEnd Scene Address: %X\n", d3d9Device[42]);
+	printf("\nEnd Scene Address: %X\n", (uintptr_t)d3d9Device[42]);
 
 	EndSceneFunction = d3d9Device[42];
 
@@ -47,7 +53,7 @@ void Hook::Hook_DirectX()
 
 	MH_EnableHook(EndSceneFunction);
 
-	printf("\nReset Address: %X\n", d3d9Device[16]);
+	printf("\nReset Address: %X\n", (uintptr_t)d3d9Device[16]);
 
 	ResetFunction = d3d9Device[16];
 
@@ -57,6 +63,9 @@ void Hook::Hook_DirectX()
 
 }
 
+/*
+	brief: Disables previous DirectX hooks
+*/
 void Hook::Unhook_DirectX()
 {
 	MH_DisableHook(EndSceneFunction);
@@ -64,7 +73,10 @@ void Hook::Unhook_DirectX()
 	MH_Uninitialize();
 }
 
-// Callback function for the enumerate windows function
+
+/*
+	brief: Callback function for the enumerate windows function
+*/
 BOOL CALLBACK Hook::enumWind(const HWND handle, LPARAM lp)
 {
 	DWORD procID;
@@ -76,6 +88,9 @@ BOOL CALLBACK Hook::enumWind(const HWND handle, LPARAM lp)
 	return FALSE;
 }
 
+/*
+	brief: Return the current process' HWND
+*/
 HWND Hook::GetProcessWindow()
 {
 	window = nullptr;
@@ -97,6 +112,9 @@ HWND Hook::GetProcessWindow()
 	return window;
 }
 
+/*
+	Getting D3D9Device using a dummy device
+*/
 BOOL Hook::GetD3D9Device(void** pTable, const size_t size)
 {
 	if (!pTable)
