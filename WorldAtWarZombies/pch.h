@@ -15,6 +15,8 @@
 #include <d3d9.h>
 #pragma comment(lib, "d3d9.lib")
 
+
+
 #include <MinHook.h>
 
 #include "StartingThread.h"

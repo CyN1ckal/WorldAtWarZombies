@@ -8,6 +8,7 @@ HWND Hook::window;
 void* Hook::d3d9Device[119];
 void* Hook::EndSceneFunction;
 void* Hook::ResetFunction;
+void* Hook::SetStreamSourceFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
@@ -25,6 +26,8 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pDevice);
 
+	//Draw::DrawTriangle(0, 0, 0, 0, 0, 0, pDevice);
+
 	return EndScene_Original(pDevice);
 }
 
@@ -35,6 +38,26 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
 	return Reset_Original(pPresentationParameters);
 }
+
+// Setting up SetStreamSource hook
+typedef HRESULT (APIENTRY* SetStreamSource_Template)(
+	UINT                   StreamNumber,
+	IDirect3DVertexBuffer9** ppStreamData,
+	UINT* pOffsetInBytes,
+	UINT* pStride
+	);
+SetStreamSource_Template GetStreamSource_Original = nullptr;
+HRESULT APIENTRY GetStreamSource_Hook(
+	UINT                   StreamNumber,
+	IDirect3DVertexBuffer9** ppStreamData,
+	UINT* pOffsetInBytes,
+	UINT* pStride
+)
+{
+	printf("Set Stream Source Hit!\n");
+	return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes, pStride);
+}
+
 
 /*
 	brief: Creates and initializes the DirectX hooks
@@ -61,6 +84,12 @@ void Hook::Hook_DirectX()
 
 	MH_EnableHook(ResetFunction);
 
+	SetStreamSourceFunction = d3d9Device[100];
+	printf("\SetStreamSourceFunction Address: %X\n", SetStreamSourceFunction);
+
+	MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook, reinterpret_cast<LPVOID*>(&GetStreamSource_Original));
+
+	MH_EnableHook(SetStreamSourceFunction);
 }
 
 /*
@@ -70,6 +99,7 @@ void Hook::Unhook_DirectX()
 {
 	MH_DisableHook(EndSceneFunction);
 	MH_DisableHook(ResetFunction);
+	MH_DisableHook(SetStreamSourceFunction);
 	MH_Uninitialize();
 }
 
@@ -113,7 +143,7 @@ HWND Hook::GetProcessWindow()
 }
 
 /*
-	Getting D3D9Device using a dummy device
+	brief: Getting D3D9Device using a dummy device
 */
 BOOL Hook::GetD3D9Device(void** pTable, const size_t size)
 {

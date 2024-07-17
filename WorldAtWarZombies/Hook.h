@@ -7,6 +7,7 @@ public:
 	static void* d3d9Device[119];
 	static void* EndSceneFunction;
 	static void* ResetFunction;
+	static void* SetStreamSourceFunction;
 	static IDirect3DDevice9* pD3DDevice;
 	static int windowHeight, windowWidth;
 	static HRESULT APIENTRY EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice);
