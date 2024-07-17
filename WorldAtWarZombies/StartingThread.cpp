@@ -15,15 +15,13 @@ DWORD WINAPI StartingThread(HMODULE hModule)
 
 	freopen_s(&f, "CONOUT$", "w", stdout);
 
-	printf("Hello from DLL!\n");
-
 	if (!Hook::Hook_DirectX())
 	{
 		CleanUpRoutine(hModule, f);
 		return 0;
 	}
 
-	printf("[+] All Hooks Created and Enabled\n");
+	printf("\n[+] All Hooks Created and Enabled\n");
 
 	while (true)
 	{

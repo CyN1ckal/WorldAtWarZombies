@@ -24,7 +24,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	}
 
 
-	Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pDevice);
+	Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
+
+	Draw::DrawLine(0, 0, 100, 100, 3, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
 
 	//Draw::DrawTriangle(0, 0, 0, 0, 0, 0, pDevice);
 
@@ -71,7 +73,7 @@ bool Hook::Hook_DirectX()
 
 	EndSceneFunction = d3d9Device[42];
 
-	printf("\nEnd Scene Address: %X", (uintptr_t)EndSceneFunction);
+	printf("End Scene Address: %X\n", (uintptr_t)EndSceneFunction);
 
 	if (MH_CreateHook(EndSceneFunction, &EndScene_Hook, reinterpret_cast<LPVOID*>(&EndScene_Original)) != MH_OK)
 	{
@@ -89,7 +91,7 @@ bool Hook::Hook_DirectX()
 
 	ResetFunction = d3d9Device[16];
 
-	printf("\nReset Address: %X\n", (uintptr_t)ResetFunction);
+	printf("Reset Address: %X\n", (uintptr_t)ResetFunction);
 
 	if (MH_CreateHook(ResetFunction, &Reset_Hook, reinterpret_cast<LPVOID*>(&Reset_Original)) != MH_OK)
 	{
@@ -107,7 +109,7 @@ bool Hook::Hook_DirectX()
 
 	SetStreamSourceFunction = d3d9Device[100];
 
-	printf("\nSetStreamSourceFunction Address: %X\n", (uintptr_t)SetStreamSourceFunction);
+	printf("SetStreamSourceFunction Address: %X\n", (uintptr_t)SetStreamSourceFunction);
 
 	if (MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook, reinterpret_cast<LPVOID*>(&GetStreamSource_Original)) != MH_OK)
 	{
@@ -122,6 +124,8 @@ bool Hook::Hook_DirectX()
 		Unhook_DirectX();
 		return 0;
 	}
+
+	return 1;
 }
 
 /*

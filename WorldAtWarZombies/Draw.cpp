@@ -44,3 +44,17 @@ void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR colo
 
     dev->SetFVF(OriginalFVF);
 }
+
+void Draw::DrawLine(float x1, float y1, float x2, float y2, float width, bool antialias, D3DCOLOR color, IDirect3DDevice9* dev)
+{
+    ID3DXLine* m_Line;
+
+    D3DXCreateLine(dev, &m_Line);
+    D3DXVECTOR2 line[] = { D3DXVECTOR2(x1, y1), D3DXVECTOR2(x2, y2) };
+    m_Line->SetWidth(width);
+    if (antialias) m_Line->SetAntialias(1);
+    m_Line->Begin();
+    m_Line->Draw(line, 2, color);
+    m_Line->End();
+    m_Line->Release();
+}
