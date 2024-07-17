@@ -55,6 +55,7 @@ HRESULT APIENTRY GetStreamSource_Hook(
 )
 {
 	printf("Set Stream Source Hit!\n");
+	printf("Parameters: %u, %X, %X, %X\n\n", StreamNumber,ppStreamData,pOffsetInBytes,pStride);
 	return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes, pStride);
 }
 
@@ -85,7 +86,7 @@ void Hook::Hook_DirectX()
 	MH_EnableHook(ResetFunction);
 
 	SetStreamSourceFunction = d3d9Device[100];
-	printf("\SetStreamSourceFunction Address: %X\n", SetStreamSourceFunction);
+	printf("\nSetStreamSourceFunction Address: %X\n", (uintptr_t)SetStreamSourceFunction);
 
 	MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook, reinterpret_cast<LPVOID*>(&GetStreamSource_Original));
 

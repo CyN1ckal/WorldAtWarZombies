@@ -20,8 +20,6 @@ void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR colo
         printf("Something went wrong!\n");
         return;
     }
-   
-    dev->GetStreamSource(0, 0, 0, 0);
 
     CustomVertex OurVertices[] =
     {
