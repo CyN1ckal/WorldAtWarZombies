@@ -13,13 +13,6 @@ void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DD
 
 void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR color, IDirect3DDevice9* dev)
 {
-    Sleep(50);
-
-    if (dev->GetFVF(&OriginalFVF) != D3D_OK)
-    {
-        printf("Something went wrong!\n");
-        return;
-    }
 
     CustomVertex OurVertices[] =
     {
@@ -41,8 +34,6 @@ void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR colo
     dev->SetStreamSource(0, v_buffer, 0, sizeof(CustomVertex));
 
     dev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
-
-    dev->SetFVF(OriginalFVF);
 }
 
 void Draw::DrawLine(float x1, float y1, float x2, float y2, float width, bool antialias, D3DCOLOR color, IDirect3DDevice9* dev)

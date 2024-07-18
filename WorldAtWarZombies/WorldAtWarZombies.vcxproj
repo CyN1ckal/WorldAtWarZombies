@@ -145,13 +145,16 @@
   <ItemGroup>
     <ClInclude Include="Draw.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="Hack.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Reclass.h" />
     <ClInclude Include="StartingThread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Draw.cpp" />
+    <ClCompile Include="Hack.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

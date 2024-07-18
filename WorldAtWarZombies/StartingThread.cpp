@@ -32,7 +32,11 @@ DWORD WINAPI StartingThread(HMODULE hModule)
 		Sleep(100);
 	}
 
+	printf("[-] Unhooking!\n");
+
 	Hook::Unhook_DirectX();
+
+	Sleep(1000);
 
 	CleanUpRoutine(hModule, f);
 

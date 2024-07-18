@@ -20,15 +20,31 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	if (!bInit)
 	{
 		pD3DDevice = pDevice;
-		bInit = true;
+		bInit = true; 
 	}
 
+	Hack::PrintAliveEnts();
 
-	Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
+	//IDirect3DStateBlock9* stateBlock = nullptr;
+	//IDirect3DPixelShader9* pixelShader = nullptr;
+	//IDirect3DBaseTexture9* texture = nullptr;
 
-	Draw::DrawLine(0, 0, 100, 100, 3, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
 
-	//Draw::DrawTriangle(0, 0, 0, 0, 0, 0, pDevice);
+	//pDevice->GetTexture(0, &texture);
+	//pDevice->GetPixelShader(&pixelShader);
+	//pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock);
+
+	////Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
+
+
+	////Draw::DrawLine(i, i, i+i, i*10, 1, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
+
+	////Draw::DrawTriangle(0, 0, 0, 0, 0, 0, pDevice);
+
+	//pDevice->SetTexture(0, texture);
+	//pDevice->SetPixelShader(pixelShader);
+	//stateBlock->Apply();
+
 
 	return EndScene_Original(pDevice);
 }

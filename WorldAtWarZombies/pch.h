@@ -26,4 +26,8 @@
 
 #include "Draw.h"
 
+#include "Reclass.h"
+
+#include "Hack.h"
+
 #endif //PCH_H
