@@ -1,5 +1,6 @@
 #include "pch.h"
 
+
 void Hack::PrintAliveEnts()
 {
 	EntityListStruct* EntListStruct = (EntityListStruct*)((uintptr_t)GetModuleHandle(NULL) + 0x14e74d0);

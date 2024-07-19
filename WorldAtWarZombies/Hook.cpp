@@ -12,6 +12,13 @@ void* Hook::SetStreamSourceFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
+// Setting up function call prototype and address
+typedef int(__stdcall* OutputToCMD_Template)(int a1, int a2, ...);
+namespace HookedFunctions
+{
+	OutputToCMD_Template PrintToConsole = reinterpret_cast<OutputToCMD_Template>(0x59A2C0);
+}
+
 // Setting up EndScene hook
 typedef HRESULT(APIENTRY* EndScene_Template)(LPDIRECT3DDEVICE9 pDevice);
 EndScene_Template EndScene_Original = nullptr;
@@ -23,7 +30,12 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 		bInit = true; 
 	}
 
-	Hack::PrintAliveEnts();
+	if (GetAsyncKeyState(VK_INSERT) & 1)
+	{
+		HookedFunctions::PrintToConsole(16, (int)"CyNickal Testing\n", "");
+	}
+
+	//Hack::PrintAliveEnts();
 
 	//IDirect3DStateBlock9* stateBlock = nullptr;
 	//IDirect3DPixelShader9* pixelShader = nullptr;
