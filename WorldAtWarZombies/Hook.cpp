@@ -9,18 +9,51 @@ void* Hook::d3d9Device[119];
 void* Hook::EndSceneFunction;
 void* Hook::ResetFunction;
 void* Hook::SetStreamSourceFunction;
+void* Hook::PrintToConsoleFunction;
+void* Hook::PrintToConsoleRawFunction;
+void* Hook::PrintToScreen_MaybeFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
-// Setting up function call prototype and address
-typedef int(__stdcall* OutputToCMD_Template)(int a1, int a2, ...);
-namespace HookedFunctions
+ID3DXFont* Draw::pFont[1];
+
+
+PrintToScreenMaybe_Template PrintToScreen_Maybe_Original = nullptr;
+void APIENTRY PrintToScreen_Maybe_Hooked(int a1, ...)
 {
-	OutputToCMD_Template PrintToConsole = reinterpret_cast<OutputToCMD_Template>(0x59A2C0);
+	PrintToScreen_Maybe_Original(a1);
 }
 
+PrintRawToConsole_Template PrintRawToConsole_Original = nullptr;
+void __cdecl PrintRawToConsole_Hooked(int a1, const char* a2, int a3)
+{
+	//printf("a1: %d,a2: %s,a3: %d\n", a1,a2,a3);
+	PrintRawToConsole_Original(a1, a2, a3);
+}
+
+// Print To Console Hook
+PrintToConsole_Template PrintToConsole_Original = nullptr;
+void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe, int StringToPrint, ...)
+{
+	PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
+}
+
+void Hook::EnableMiscHooks()
+{
+	PrintToConsoleFunction = (void*)0x59a2c0;
+	MH_CreateHook(PrintToConsoleFunction,&PrintToConsole_Hooked,reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
+	MH_EnableHook(PrintToConsoleFunction);
+	PrintToConsoleRawFunction = (void*)0x59A170;
+	MH_CreateHook(PrintToConsoleRawFunction, &PrintRawToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
+	MH_EnableHook(PrintToConsoleRawFunction);
+	PrintToScreen_MaybeFunction = (void*)0x5f6d80;
+	MH_CreateHook(PrintToScreen_MaybeFunction, &PrintToScreen_Maybe_Hooked, reinterpret_cast<LPVOID*>(&PrintToScreen_Maybe_Original));
+	MH_EnableHook(PrintToScreen_MaybeFunction);
+
+}
+
+
 // Setting up EndScene hook
-typedef HRESULT(APIENTRY* EndScene_Template)(LPDIRECT3DDEVICE9 pDevice);
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 {
@@ -28,11 +61,14 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	{
 		pD3DDevice = pDevice;
 		bInit = true; 
+		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Tahoma", &Draw::pFont[0]);
 	}
 
 	if (GetAsyncKeyState(VK_INSERT) & 1)
 	{
-		HookedFunctions::PrintToConsole(16, (int)"CyNickal Testing\n", "");
+		Hack::PrintRawToConsole(16, "test\n", 0);
+		Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
+		Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
 	}
 
 	//Hack::PrintAliveEnts();
@@ -46,8 +82,13 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	//pDevice->GetPixelShader(&pixelShader);
 	//pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock);
 
-	////Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
+	//Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
 
+	Draw::DrawHealthBar(pD3DDevice);
+
+	LPRECT TextRect = {};
+	SetRect(TextRect, 25, 25, 50, 50);
+	Draw::pFont[0]->DrawTextA(NULL, "Test", -1, TextRect, DT_CENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
 
 	////Draw::DrawLine(i, i, i+i, i*10, 1, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
 
@@ -62,20 +103,14 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 }
 
 // Setting up Reset hook
-typedef HRESULT(APIENTRY* Reset_Template)(D3DPRESENT_PARAMETERS* pPresentationParameters);
 Reset_Template Reset_Original = nullptr;
 HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
+	printf("Reset Called!\n");
 	return Reset_Original(pPresentationParameters);
 }
 
 // Setting up SetStreamSource hook
-typedef HRESULT(APIENTRY* SetStreamSource_Template)(
-	UINT                   StreamNumber,
-	IDirect3DVertexBuffer9** ppStreamData,
-	UINT* pOffsetInBytes,
-	UINT* pStride
-	);
 SetStreamSource_Template GetStreamSource_Original = nullptr;
 HRESULT APIENTRY GetStreamSource_Hook(
 	UINT                   StreamNumber,

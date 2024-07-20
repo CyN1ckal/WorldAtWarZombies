@@ -21,6 +21,8 @@ DWORD WINAPI StartingThread(HMODULE hModule)
 		return 0;
 	}
 
+	Hook::EnableMiscHooks();
+
 	printf("\n[+] All Hooks Created and Enabled\n");
 
 	while (true)

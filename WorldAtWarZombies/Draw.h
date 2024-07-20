@@ -6,6 +6,9 @@ public:
 	static void DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DDevice9* dev);
 	static void DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR color, IDirect3DDevice9* dev);
 	static void DrawLine(float x1, float y1, float x2, float y2, float width, bool antialias, D3DCOLOR color, IDirect3DDevice9* dev);
+	static bool DrawHealthBar(IDirect3DDevice9* dev);
+
+	static ID3DXFont* pFont[1];
 
 	static LPDIRECT3DVERTEXBUFFER9 v_buffer;
 };
