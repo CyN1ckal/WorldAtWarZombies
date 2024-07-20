@@ -20,7 +20,11 @@
 
 #include <format>
 
+#include <string>
+
 #include <MinHook.h>
+
+#include "Reclass.h"
 
 #include "StartingThread.h"
 
@@ -28,7 +32,6 @@
 
 #include "Draw.h"
 
-#include "Reclass.h"
 
 #include "Hack.h"
 

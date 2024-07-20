@@ -41,7 +41,7 @@ void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe, int StringToPr
 void Hook::EnableMiscHooks()
 {
 	PrintToConsoleFunction = (void*)0x59a2c0;
-	MH_CreateHook(PrintToConsoleFunction,&PrintToConsole_Hooked,reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
+	MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
 	MH_EnableHook(PrintToConsoleFunction);
 	PrintToConsoleRawFunction = (void*)0x59A170;
 	MH_CreateHook(PrintToConsoleRawFunction, &PrintRawToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
@@ -52,6 +52,26 @@ void Hook::EnableMiscHooks()
 
 }
 
+bool WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16], const int windowWidth, const int windowHeight)
+{
+	Vector4 clipCoords = {};
+	clipCoords.x = pos.x * matrix[0] + pos.y * matrix[1] + pos.z * matrix[2] + matrix[3];
+	clipCoords.y = pos.x * matrix[4] + pos.y * matrix[5] + pos.z * matrix[6] + matrix[7];
+	clipCoords.z = pos.x * matrix[8] + pos.y * matrix[9] + pos.z * matrix[10] + matrix[11];
+	clipCoords.w = pos.x * matrix[12] + pos.y * matrix[13] + pos.z * matrix[14] + matrix[15];
+
+	if (clipCoords.w < 0.1f)
+		return false;
+
+	Vector3 NDC = {};
+	NDC.x = clipCoords.x / clipCoords.w;
+	NDC.y = clipCoords.y / clipCoords.w;
+	NDC.z = clipCoords.z / clipCoords.w;
+
+	screen.x = ((float)windowWidth / static_cast<float>(2) * NDC.x) + (NDC.x + (float)windowWidth / static_cast<float>(2));
+	screen.y = -((float)windowHeight / static_cast<float>(2) * NDC.y) + (NDC.y + (float)windowHeight / static_cast<float>(2));
+	return true;
+}
 
 // Setting up EndScene hook
 EndScene_Template EndScene_Original = nullptr;
@@ -60,15 +80,16 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	if (!bInit)
 	{
 		pD3DDevice = pDevice;
-		bInit = true; 
+		bInit = true;
 		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Tahoma", &Draw::pFont[0]);
 	}
 
 	if (GetAsyncKeyState(VK_INSERT) & 1)
 	{
-		Hack::PrintRawToConsole(16, "test\n", 0);
-		Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
-		Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+		//Hack::PrintRawToConsole(16, "test\n", 0);
+		//Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
+		//Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+		Hack::GetNumZombies();
 	}
 
 	//Hack::PrintAliveEnts();
@@ -77,20 +98,32 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	//IDirect3DPixelShader9* pixelShader = nullptr;
 	//IDirect3DBaseTexture9* texture = nullptr;
 
-
 	//pDevice->GetTexture(0, &texture);
 	//pDevice->GetPixelShader(&pixelShader);
 	//pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock);
 
-	//Draw::DrawFilledRect(0, 0, 100, 100, D3DCOLOR_ARGB(255, 255, 0, 0), pD3DDevice);
+	Vector2 ScreenDimensions = {};
 
-	Draw::DrawHealthBar(pD3DDevice);
+	Draw::GetScreenDimensions(pD3DDevice, &ScreenDimensions);
 
-	
+	Draw::DrawHealthBar(pD3DDevice, ScreenDimensions);
 
-	////Draw::DrawLine(i, i, i+i, i*10, 1, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
+	Draw::DrawZombieCount(pD3DDevice, ScreenDimensions);
 
-	////Draw::DrawTriangle(0, 0, 0, 0, 0, 0, pDevice);
+
+	{ // Bullshit matrix math practice
+		auto* pViewMatrix = (float*)(0x008E870C);
+		Vector2 screen = {};
+		WorldToScreen({ 0,0,0 }, screen, pViewMatrix, Hack::RefDef->Width, Hack::RefDef->Height);
+		printf("W2S: %f, %f\n", screen.x, screen.y);
+
+		Draw::DrawLine(500, 500, screen.x, screen.y, 5, false, D3DCOLOR_ARGB(255, 0, 255, 0), pD3DDevice);
+
+	}
+
+
+
+
 
 	//pDevice->SetTexture(0, texture);
 	//pDevice->SetPixelShader(pixelShader);

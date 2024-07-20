@@ -5,7 +5,10 @@ LPDIRECT3DVERTEXBUFFER9 Draw::v_buffer;
 
 DWORD OriginalFVF = 0;
 
-bool GetScreenDimensions(IDirect3DDevice9* dev, Vector2* a)
+/*
+	brief: Returns current game screen dimension
+*/
+bool Draw::GetScreenDimensions(IDirect3DDevice9* dev, Vector2* a)
 {
 
 	IDirect3DSurface9* pSurface;
@@ -19,14 +22,19 @@ bool GetScreenDimensions(IDirect3DDevice9* dev, Vector2* a)
 	return 1;
 }
 
-
+/*
+	brief: Fills a rectangular area of your monitor with 1 single color
+*/
 void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DDevice9* dev)
 {
 	D3DRECT BarRect = { x, y, x + w, y + h };
 	dev->Clear(1, &BarRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, color, 0, 0);
 }
 
-void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR color, IDirect3DDevice9* dev)
+/*
+	brief: My attempt at drawing a triangle with vertices. It sorta works, but then gets like drawn over or something? Need to figure it out a bit more.
+*/
+void Draw::DrawTriangle(D3DCOLOR color, IDirect3DDevice9* dev)
 {
 
 	CustomVertex OurVertices[] =
@@ -51,6 +59,9 @@ void Draw::DrawTriangle(int x1, int y1, int x2, int y2, int width, D3DCOLOR colo
 	dev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 }
 
+/*
+	brief: Draw a line between 2 sets of screen coordinates
+*/
 void Draw::DrawLine(float x1, float y1, float x2, float y2, float width, bool antialias, D3DCOLOR color, IDirect3DDevice9* dev)
 {
 	ID3DXLine* m_Line;
@@ -65,18 +76,17 @@ void Draw::DrawLine(float x1, float y1, float x2, float y2, float width, bool an
 	m_Line->Release();
 }
 
-bool Draw::DrawHealthBar(IDirect3DDevice9* dev)
+/*
+	brief: Draw a colored healthbar for your local player
+*/
+bool Draw::DrawHealthBar(IDirect3DDevice9* dev, Vector2 ScreenDimensions)
 {
 
 	LocalPlayer* Local_Player = (LocalPlayer*)(Hack::WaW_BaseAddress + 0x136c6f0);
 
-	if (!Local_Player->Time) return false;
+	if (!Local_Player->Time || Local_Player->Flags == 8 || Local_Player->Flags == 8) return false;
 
-	Vector2 test;
-
-	GetScreenDimensions(dev, &test);
-
-	Vector2 CenterScreen = { test.x / 2,test.y / 2 };
+	Vector2 CenterScreen = { ScreenDimensions.x / 2,ScreenDimensions.y / 2 };
 
 	float PercentageMaxHealth = static_cast<float>(Local_Player->CurrentHealth) / static_cast<float>(Local_Player->MaxHealth);
 	int HealthBarWidth = 300;
@@ -84,24 +94,49 @@ bool Draw::DrawHealthBar(IDirect3DDevice9* dev)
 	int HealthBarOffsetFromBottom = 50;
 
 	D3DRECT BackgroundRect = { CenterScreen.x - HealthBarWidth/2,
-						test.y - HealthBarOffsetFromBottom - HealthBarHeight,
+						ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight,
 						CenterScreen.x + HealthBarWidth/2,
-						test.y - HealthBarOffsetFromBottom};
+						ScreenDimensions.y - HealthBarOffsetFromBottom};
 	dev->Clear(1, &BackgroundRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 125, 125, 125), 0, 0);
 
 	int HealthInPixels = floor(PercentageMaxHealth * HealthBarWidth);
 
 	D3DRECT HealtRect = { CenterScreen.x - HealthBarWidth / 2,
-						test.y - HealthBarOffsetFromBottom - HealthBarHeight,
+						ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight,
 						CenterScreen.x - HealthBarWidth/2 + HealthInPixels,
-						test.y - HealthBarOffsetFromBottom };
+						ScreenDimensions.y - HealthBarOffsetFromBottom };
 	dev->Clear(1, &HealtRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 255, 0), 0, 0);
 
 	
 	RECT rect;
-	SetRect(&rect, CenterScreen.x-HealthBarWidth/2, test.y - HealthBarOffsetFromBottom - HealthBarHeight, CenterScreen.x + HealthBarWidth / 2, test.y-HealthBarOffsetFromBottom);
+	SetRect(&rect, CenterScreen.x-HealthBarWidth/2, ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight, CenterScreen.x + HealthBarWidth / 2, ScreenDimensions.y-HealthBarOffsetFromBottom);
 	std::string HealthBarString = std::format("{} / {}", Local_Player->CurrentHealth, Local_Player->MaxHealth);
 	Draw::pFont[0]->DrawText(NULL, HealthBarString.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
 
+	return true;
+}
+
+/*
+	brief: Draw the number of zombies alive on your screen
+*/
+bool Draw::DrawZombieCount(IDirect3DDevice9* dev, Vector2 ScreenDimensions)
+{
+	int ZombieCount = Hack::GetNumZombies();
+
+	std::string ZombieCountString = std::to_string(ZombieCount) + " zombies left";
+
+	// pFont[0] has a width of 8 pixels and a height of 24
+	int StringPixelWidth = ZombieCountString.length() * 8;
+	int OffsetFromBottom = 24;
+	RECT rect;
+
+	// L T R B
+	SetRect(&rect,
+		(ScreenDimensions.x/2)-(StringPixelWidth/2),
+		ScreenDimensions.y-24- OffsetFromBottom,
+		(ScreenDimensions.x / 2) + (StringPixelWidth / 2),
+		ScreenDimensions.y- OffsetFromBottom);
+
+	Draw::pFont[0]->DrawText(NULL, ZombieCountString.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
 	return true;
 }

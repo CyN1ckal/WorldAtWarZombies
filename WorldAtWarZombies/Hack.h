@@ -16,6 +16,8 @@ public:
 	static inline PrintToScreenMaybe_Template PrintToScreen_Maybe = reinterpret_cast<PrintToScreenMaybe_Template>(0x5f6d80);
 
 	static inline uintptr_t WaW_BaseAddress = (uintptr_t)GetModuleHandle(NULL);
+	static inline refdef_t* RefDef = reinterpret_cast<refdef_t*>(WaW_BaseAddress + 0x3120338);
 
+	static int GetNumZombies();
 private:
 };
