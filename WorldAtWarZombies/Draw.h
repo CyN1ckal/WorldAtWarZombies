@@ -3,14 +3,15 @@
 class Draw
 {
 public:
-	static bool GetScreenDimensions(IDirect3DDevice9* dev, Vector2* a);
-
+	static bool WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16], const int windowWidth, const int windowHeight);
 
 	static void DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DDevice9* dev);
 	static void DrawTriangle(D3DCOLOR color, IDirect3DDevice9* dev);
 	static void DrawLine(float x1, float y1, float x2, float y2, float width, bool antialias, D3DCOLOR color, IDirect3DDevice9* dev);
-	static bool DrawHealthBar(IDirect3DDevice9* dev, Vector2 ScreenDimensions);
-	static bool DrawZombieCount(IDirect3DDevice9* dev, Vector2 ScreenDimensions);
+	static bool DrawHealthBar(IDirect3DDevice9* dev);
+	static bool DrawZombieCount(IDirect3DDevice9* dev);
+	static bool DrawZombieTracers(IDirect3DDevice9* dev);
+	static bool DrawTypeTracers(IDirect3DDevice9* dev, int eType);
 
 	static ID3DXFont* pFont[1];
 

@@ -17,6 +17,8 @@ public:
 
 	static inline uintptr_t WaW_BaseAddress = (uintptr_t)GetModuleHandle(NULL);
 	static inline refdef_t* RefDef = reinterpret_cast<refdef_t*>(WaW_BaseAddress + 0x3120338);
+	static inline LocalPlayer* Local_Player = (LocalPlayer*)(WaW_BaseAddress + 0x136c6f0);
+	static inline auto* pViewMatrix = (float*)(0x008E870C);
 
 	static int GetNumZombies();
 private:

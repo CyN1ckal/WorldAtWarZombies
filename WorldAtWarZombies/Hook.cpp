@@ -52,26 +52,7 @@ void Hook::EnableMiscHooks()
 
 }
 
-bool WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16], const int windowWidth, const int windowHeight)
-{
-	Vector4 clipCoords = {};
-	clipCoords.x = pos.x * matrix[0] + pos.y * matrix[1] + pos.z * matrix[2] + matrix[3];
-	clipCoords.y = pos.x * matrix[4] + pos.y * matrix[5] + pos.z * matrix[6] + matrix[7];
-	clipCoords.z = pos.x * matrix[8] + pos.y * matrix[9] + pos.z * matrix[10] + matrix[11];
-	clipCoords.w = pos.x * matrix[12] + pos.y * matrix[13] + pos.z * matrix[14] + matrix[15];
 
-	if (clipCoords.w < 0.1f)
-		return false;
-
-	Vector3 NDC = {};
-	NDC.x = clipCoords.x / clipCoords.w;
-	NDC.y = clipCoords.y / clipCoords.w;
-	NDC.z = clipCoords.z / clipCoords.w;
-
-	screen.x = ((float)windowWidth / static_cast<float>(2) * NDC.x) + (NDC.x + (float)windowWidth / static_cast<float>(2));
-	screen.y = -((float)windowHeight / static_cast<float>(2) * NDC.y) + (NDC.y + (float)windowHeight / static_cast<float>(2));
-	return true;
-}
 
 // Setting up EndScene hook
 EndScene_Template EndScene_Original = nullptr;
@@ -81,7 +62,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	{
 		pD3DDevice = pDevice;
 		bInit = true;
-		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Tahoma", &Draw::pFont[0]);
+		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Consolas", &Draw::pFont[0]);
 	}
 
 	if (GetAsyncKeyState(VK_INSERT) & 1)
@@ -102,28 +83,17 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	//pDevice->GetPixelShader(&pixelShader);
 	//pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock);
 
-	Vector2 ScreenDimensions = {};
 
-	Draw::GetScreenDimensions(pD3DDevice, &ScreenDimensions);
+	if (Hack::Local_Player->Time)
+	{
+		//Draw::DrawZombieTracers(pD3DDevice);
 
-	Draw::DrawHealthBar(pD3DDevice, ScreenDimensions);
+		Draw::DrawTypeTracers(pD3DDevice, 6);
 
-	Draw::DrawZombieCount(pD3DDevice, ScreenDimensions);
+		Draw::DrawHealthBar(pD3DDevice);
 
-
-	{ // Bullshit matrix math practice
-		auto* pViewMatrix = (float*)(0x008E870C);
-		Vector2 screen = {};
-		WorldToScreen({ 0,0,0 }, screen, pViewMatrix, Hack::RefDef->Width, Hack::RefDef->Height);
-		printf("W2S: %f, %f\n", screen.x, screen.y);
-
-		Draw::DrawLine(500, 500, screen.x, screen.y, 5, false, D3DCOLOR_ARGB(255, 0, 255, 0), pD3DDevice);
-
+		Draw::DrawZombieCount(pD3DDevice);
 	}
-
-
-
-
 
 	//pDevice->SetTexture(0, texture);
 	//pDevice->SetPixelShader(pixelShader);

@@ -22,7 +22,8 @@ enum class EntityType : int32_t
 	DeadZombie = 18,
 	Empty = 0,
 	Prop = 6,
-	Zombie = 16
+	Zombie = 16,
+	ZombieSpawn = 17
 };
 
 class NumZombies
