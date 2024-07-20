@@ -86,9 +86,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	if (Hack::Local_Player->Time)
 	{
-		//Draw::DrawZombieTracers(pD3DDevice);
+		Draw::DrawZombieTracers(pD3DDevice);
 
-		Draw::DrawTypeTracers(pD3DDevice, 6);
+		//Draw::DrawTypeTracers(pD3DDevice, 16);
 
 		Draw::DrawHealthBar(pD3DDevice);
 

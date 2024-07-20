@@ -11,7 +11,7 @@ int Hack::GetNumZombies()
 
 	for (int i = 0; i < 1024; i++)
 	{
-		if (EntityStateArray->EntityStateArray[i].eType == 16)
+		if (EntityStateArray->EntityStateArray[i].eType == 16 && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
 		{
 			ZombieCount++;
 			//printf("Zombie ID: %d\n", i);

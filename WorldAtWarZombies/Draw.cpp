@@ -73,8 +73,8 @@ bool Draw::DrawHealthBar(IDirect3DDevice9* dev)
 
 	float PercentageMaxHealth = static_cast<float>(Hack::Local_Player->CurrentHealth) / static_cast<float>(Hack::Local_Player->MaxHealth);
 	int HealthBarWidth = 300;
-	int HealthBarHeight = 40;
-	int HealthBarOffsetFromBottom = 50;
+	int HealthBarHeight = 24;
+	int HealthBarOffsetFromBottom = 24;
 
 	D3DRECT BackgroundRect = { CenterScreen.x - HealthBarWidth / 2,
 						ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight,
@@ -110,7 +110,7 @@ bool Draw::DrawZombieCount(IDirect3DDevice9* dev)
 
 	// pFont[0] has a width of 8 pixels and a height of 24
 	int StringPixelWidth = ZombieCountString.length() * 8;
-	int OffsetFromBottom = 24;
+	int OffsetFromBottom = 0;
 	RECT rect;
 
 	// L T R B
@@ -132,7 +132,7 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9* dev)
 
 	for (int i = 0; i < 1024; i++)
 	{
-		if (EntityStateArray->EntityStateArray[i].eType == 16)
+		if (EntityStateArray->EntityStateArray[i].eType == 16 && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
 		{
 			Vector2 screen = {};
 			if (WorldToScreen(EntityStateArray->EntityStateArray[i].position, screen, Hack::pViewMatrix, Hack::RefDef->Width, Hack::RefDef->Height))
@@ -152,16 +152,16 @@ bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, int eType)
 
 	for (int i = 0; i < 1024; i++)
 	{
-		if (EntityStateArray->EntityStateArray[i].eType == eType)
+		if (EntityStateArray->EntityStateArray[i].eType == eType && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
 		{
 			Vector2 screen = {};
 			if (WorldToScreen(EntityStateArray->EntityStateArray[i].position, screen, Hack::pViewMatrix, Hack::RefDef->Width, Hack::RefDef->Height))
 			{
+				Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x, screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252), dev);
 				RECT rect;
 				SetRect(&rect, screen.x, screen.y, screen.x+120, screen.y+100);
 				std::string TypeString = std::format("Type:{}-ID:{}", EntityStateArray->EntityStateArray[i].eType, i);
 				pFont[0]->DrawTextA(NULL, TypeString.c_str(), -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_ARGB(255, 125, 125, 125));
-				Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x, screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252), dev);
 			}
 		}
 	}
