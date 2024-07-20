@@ -18,6 +18,8 @@
 #include <d3dx9.h>
 #pragma comment(lib, "d3dx9.lib")
 
+#include <format>
+
 #include <MinHook.h>
 
 #include "StartingThread.h"

@@ -80,7 +80,7 @@ bool Draw::DrawHealthBar(IDirect3DDevice9* dev)
 
 	float PercentageMaxHealth = static_cast<float>(Local_Player->CurrentHealth) / static_cast<float>(Local_Player->MaxHealth);
 	int HealthBarWidth = 300;
-	int HealthBarHeight = 50;
+	int HealthBarHeight = 40;
 	int HealthBarOffsetFromBottom = 50;
 
 	D3DRECT BackgroundRect = { CenterScreen.x - HealthBarWidth/2,
@@ -98,6 +98,10 @@ bool Draw::DrawHealthBar(IDirect3DDevice9* dev)
 	dev->Clear(1, &HealtRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 255, 0), 0, 0);
 
 	
+	RECT rect;
+	SetRect(&rect, CenterScreen.x-HealthBarWidth/2, test.y - HealthBarOffsetFromBottom - HealthBarHeight, CenterScreen.x + HealthBarWidth / 2, test.y-HealthBarOffsetFromBottom);
+	std::string HealthBarString = std::format("{} / {}", Local_Player->CurrentHealth, Local_Player->MaxHealth);
+	Draw::pFont[0]->DrawText(NULL, HealthBarString.c_str(), -1, &rect, DT_CENTER | DT_VCENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
 
 	return true;
 }

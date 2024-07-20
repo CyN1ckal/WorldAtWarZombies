@@ -86,9 +86,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	Draw::DrawHealthBar(pD3DDevice);
 
-	LPRECT TextRect = {};
-	SetRect(TextRect, 25, 25, 50, 50);
-	Draw::pFont[0]->DrawTextA(NULL, "Test", -1, TextRect, DT_CENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
+	
 
 	////Draw::DrawLine(i, i, i+i, i*10, 1, false, D3DCOLOR_ARGB(255, 255, 255, 255), pD3DDevice);
 
@@ -97,7 +95,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	//pDevice->SetTexture(0, texture);
 	//pDevice->SetPixelShader(pixelShader);
 	//stateBlock->Apply();
-
 
 	return EndScene_Original(pDevice);
 }
