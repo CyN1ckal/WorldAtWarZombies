@@ -147,9 +147,11 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Hack.h" />
     <ClInclude Include="Hook.h" />
+    <ClInclude Include="Offsets.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Reclass.h" />
     <ClInclude Include="StartingThread.h" />
+    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />

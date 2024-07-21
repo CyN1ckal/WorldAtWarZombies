@@ -10,19 +10,21 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
-#include <iostream>
-
 #include <d3d9.h>
 #pragma comment(lib, "d3d9.lib")
 
 #include <d3dx9.h>
 #pragma comment(lib, "d3dx9.lib")
 
+#include <iostream>
+#include <string>
 #include <format>
 
-#include <string>
-
 #include <MinHook.h>
+
+#include "Offsets.h"
+
+#include "Vector.h"
 
 #include "Reclass.h"
 
@@ -31,7 +33,6 @@
 #include "Hook.h"
 
 #include "Draw.h"
-
 
 #include "Hack.h"
 

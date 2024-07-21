@@ -1,9 +1,29 @@
 #include "pch.h"
 
-// Forward Declaration from static class
-LPDIRECT3DVERTEXBUFFER9 Draw::v_buffer;
+/*
+	brief: Copy and pasted world to screen... Need to do this by myself still. But  it takes 3d coordinates and makes them into 2d screen coordinates for esp drawing.
+			Basically just a bunch of matrix math.
+*/
+bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16], const int windowWidth, const int windowHeight)
+{
+	Vector4 clipCoords = {};
+	clipCoords.x = pos.x * matrix[0] + pos.y * matrix[1] + pos.z * matrix[2] + matrix[3];
+	clipCoords.y = pos.x * matrix[4] + pos.y * matrix[5] + pos.z * matrix[6] + matrix[7];
+	clipCoords.z = pos.x * matrix[8] + pos.y * matrix[9] + pos.z * matrix[10] + matrix[11];
+	clipCoords.w = pos.x * matrix[12] + pos.y * matrix[13] + pos.z * matrix[14] + matrix[15];
 
-DWORD OriginalFVF = 0;
+	if (clipCoords.w < 0.1f)
+		return false;
+
+	Vector3 NDC = {};
+	NDC.x = clipCoords.x / clipCoords.w;
+	NDC.y = clipCoords.y / clipCoords.w;
+	NDC.z = clipCoords.z / clipCoords.w;
+
+	screen.x = ((float)windowWidth / static_cast<float>(2) * NDC.x) + (NDC.x + (float)windowWidth / static_cast<float>(2));
+	screen.y = -((float)windowHeight / static_cast<float>(2) * NDC.y) + (NDC.y + (float)windowHeight / static_cast<float>(2));
+	return true;
+}
 
 /*
 	brief: Fills a rectangular area of your monitor with 1 single color
@@ -17,6 +37,7 @@ void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color, IDirect3DD
 /*
 	brief: My attempt at drawing a triangle with vertices. It sorta works, but then gets like drawn over or something? Need to figure it out a bit more.
 */
+LPDIRECT3DVERTEXBUFFER9 Draw::v_buffer;
 void Draw::DrawTriangle(D3DCOLOR color, IDirect3DDevice9* dev)
 {
 
@@ -124,7 +145,9 @@ bool Draw::DrawZombieCount(IDirect3DDevice9* dev)
 	return true;
 }
 
-
+/*
+	brief: Draws tracers from the bottom of the screen to every zombie which is alive
+*/
 bool Draw::DrawZombieTracers(IDirect3DDevice9* dev)
 {
 
@@ -132,12 +155,12 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9* dev)
 
 	for (int i = 0; i < 1024; i++)
 	{
-		if (EntityStateArray->EntityStateArray[i].eType == 16 && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
+		if (EntityStateArray->EntityStateArray[i].eType == EntityType::Zombie && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
 		{
 			Vector2 screen = {};
 			if (WorldToScreen(EntityStateArray->EntityStateArray[i].position, screen, Hack::pViewMatrix, Hack::RefDef->Width, Hack::RefDef->Height))
 			{
-				Draw::DrawLine(Hack::RefDef->Width/2, Hack::RefDef->Height, screen.x, screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252), dev);
+				Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x, screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252), dev);
 			}
 		}
 	}
@@ -145,7 +168,10 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9* dev)
 	return 1;
 }
 
-bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, int eType)
+/*
+	brief: Draw a tracer from the bottom of the screen to all entities with the specified type. Also prints out what the eType is and the entityState number
+*/
+bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType)
 {
 
 	EntityStateArray_New* EntityStateArray = *(EntityStateArray_New**)(Hack::WaW_BaseAddress + 0xbe1c0);
@@ -159,34 +185,12 @@ bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, int eType)
 			{
 				Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x, screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252), dev);
 				RECT rect;
-				SetRect(&rect, screen.x, screen.y, screen.x+120, screen.y+100);
-				std::string TypeString = std::format("Type:{}-ID:{}", EntityStateArray->EntityStateArray[i].eType, i);
+				SetRect(&rect, screen.x, screen.y, screen.x + 120, screen.y + 100);
+				std::string TypeString = std::format("Type:{}-ID:{}", (int)EntityStateArray->EntityStateArray[i].eType, i);
 				pFont[0]->DrawTextA(NULL, TypeString.c_str(), -1, &rect, DT_LEFT | DT_TOP, D3DCOLOR_ARGB(255, 125, 125, 125));
 			}
 		}
 	}
 
 	return 1;
-}
-
-
-bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16], const int windowWidth, const int windowHeight)
-{
-	Vector4 clipCoords = {};
-	clipCoords.x = pos.x * matrix[0] + pos.y * matrix[1] + pos.z * matrix[2] + matrix[3];
-	clipCoords.y = pos.x * matrix[4] + pos.y * matrix[5] + pos.z * matrix[6] + matrix[7];
-	clipCoords.z = pos.x * matrix[8] + pos.y * matrix[9] + pos.z * matrix[10] + matrix[11];
-	clipCoords.w = pos.x * matrix[12] + pos.y * matrix[13] + pos.z * matrix[14] + matrix[15];
-
-	if (clipCoords.w < 0.1f)
-		return false;
-
-	Vector3 NDC = {};
-	NDC.x = clipCoords.x / clipCoords.w;
-	NDC.y = clipCoords.y / clipCoords.w;
-	NDC.z = clipCoords.z / clipCoords.w;
-
-	screen.x = ((float)windowWidth / static_cast<float>(2) * NDC.x) + (NDC.x + (float)windowWidth / static_cast<float>(2));
-	screen.y = -((float)windowHeight / static_cast<float>(2) * NDC.y) + (NDC.y + (float)windowHeight / static_cast<float>(2));
-	return true;
 }

@@ -1,19 +1,6 @@
 #pragma once
-struct Vector4
-{
-	float x, y, z, w;
-};
 
-
-struct Vector3
-{
-	float x, y, z;
-};
-
-struct Vector2
-{
-	float x, y;
-};
+// Created with ReClass.NET 1.2 by KN4CK3R
 
 // Created with ReClass.NET 1.2 by KN4CK3R
 
@@ -22,8 +9,7 @@ enum class EntityType : int32_t
 	DeadZombie = 18,
 	Empty = 0,
 	Prop = 6,
-	Zombie = 16,
-	ZombieSpawn = 17
+	Zombie = 16
 };
 
 class NumZombies
@@ -44,7 +30,7 @@ class EntityState
 {
 public:
 	int32_t number; //0x0000
-	int32_t eType; //0x0004
+	EntityType eType; //0x0004
 	int32_t eFlags; //0x0008
 	int32_t eFlags2; //0x000C
 	char pad_0010[8]; //0x0010

@@ -10,51 +10,36 @@ void* Hook::EndSceneFunction;
 void* Hook::ResetFunction;
 void* Hook::SetStreamSourceFunction;
 void* Hook::PrintToConsoleFunction;
-void* Hook::PrintToConsoleRawFunction;
+void* Hook::PrintRawToConsoleFunction;
 void* Hook::PrintToScreen_MaybeFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
 ID3DXFont* Draw::pFont[1];
 
-
-PrintToScreenMaybe_Template PrintToScreen_Maybe_Original = nullptr;
-void APIENTRY PrintToScreen_Maybe_Hooked(int a1, ...)
-{
-	PrintToScreen_Maybe_Original(a1);
-}
-
+/*
+	brief: This is the print to console function but after the string is already formatted. This is the "raw" string.
+*/
 PrintRawToConsole_Template PrintRawToConsole_Original = nullptr;
-void __cdecl PrintRawToConsole_Hooked(int a1, const char* a2, int a3)
+void __cdecl Hook::PrintRawToConsole_Hooked(int a1, const char* a2, int a3)
 {
 	//printf("a1: %d,a2: %s,a3: %d\n", a1,a2,a3);
 	PrintRawToConsole_Original(a1, a2, a3);
 }
 
-// Print To Console Hook
+/*
+	brief: Print text to the in-game console. I was using this to dump the cmd, but currently not being used.
+			Formatting works, and you can also color-code by using ^0 - ^6 as a prefix.
+*/
 PrintToConsole_Template PrintToConsole_Original = nullptr;
 void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe, int StringToPrint, ...)
 {
 	PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
 }
 
-void Hook::EnableMiscHooks()
-{
-	PrintToConsoleFunction = (void*)0x59a2c0;
-	MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
-	MH_EnableHook(PrintToConsoleFunction);
-	PrintToConsoleRawFunction = (void*)0x59A170;
-	MH_CreateHook(PrintToConsoleRawFunction, &PrintRawToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
-	MH_EnableHook(PrintToConsoleRawFunction);
-	PrintToScreen_MaybeFunction = (void*)0x5f6d80;
-	MH_CreateHook(PrintToScreen_MaybeFunction, &PrintToScreen_Maybe_Hooked, reinterpret_cast<LPVOID*>(&PrintToScreen_Maybe_Original));
-	MH_EnableHook(PrintToScreen_MaybeFunction);
-
-}
-
-
-
-// Setting up EndScene hook
+/*
+	brief: The main EndScene hook. This is the hook which is called every frame, so this is where I do the hack logic as well.
+*/
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 {
@@ -67,10 +52,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	if (GetAsyncKeyState(VK_INSERT) & 1)
 	{
-		//Hack::PrintRawToConsole(16, "test\n", 0);
-		//Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
-		//Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
-		Hack::GetNumZombies();
+		Hack::PrintRawToConsole(16, "test\n", 0);
+		Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
+		Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
 	}
 
 	//Hack::PrintAliveEnts();
@@ -102,7 +86,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	return EndScene_Original(pDevice);
 }
 
-// Setting up Reset hook
+/*
+	brief: Reset hook. It honestly does nothing; it seems to never get called. Usually this is what gets called when you resize the screen, but because COD dosent let you, it is basically useless.
+*/
 Reset_Template Reset_Original = nullptr;
 HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 {
@@ -110,20 +96,27 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters)
 	return Reset_Original(pPresentationParameters);
 }
 
-// Setting up SetStreamSource hook
+/*
+	brief: SetStreamSource hook. I was using this to probe what parameters the game is passing. Not really being used right now.
+*/
 SetStreamSource_Template GetStreamSource_Original = nullptr;
-HRESULT APIENTRY GetStreamSource_Hook(
-	UINT                   StreamNumber,
-	IDirect3DVertexBuffer9** ppStreamData,
-	UINT* pOffsetInBytes,
-	UINT* pStride
-)
+HRESULT APIENTRY Hook::GetStreamSource_Hook(UINT StreamNumber, IDirect3DVertexBuffer9** ppStreamData, UINT* pOffsetInBytes, UINT* pStride)
 {
-	//printf("Set Stream Source Hit!\n");
-	//printf("Parameters: %u, %X, %X, %X\n\n", StreamNumber,ppStreamData,pOffsetInBytes,pStride);
 	return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes, pStride);
 }
 
+/*
+	brief: Enabling hooks which arent DirectX
+*/
+void Hook::EnableMiscHooks()
+{
+	PrintToConsoleFunction = (void*)Offsets::PrintToConsoleOffset;
+	MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
+	MH_EnableHook(PrintToConsoleFunction);
+	PrintRawToConsoleFunction = (void*)Offsets::PrintRawToConsoleOffset;
+	MH_CreateHook(PrintRawToConsoleFunction, &PrintRawToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
+	MH_EnableHook(PrintRawToConsoleFunction);
+}
 
 /*
 	brief: Creates and initializes the DirectX hooks
@@ -199,7 +192,6 @@ void Hook::Unhook_DirectX()
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
 }
-
 
 /*
 	brief: Callback function for the enumerate windows function

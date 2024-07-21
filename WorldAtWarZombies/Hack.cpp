@@ -5,16 +5,15 @@
 */
 int Hack::GetNumZombies()
 {
-	EntityStateArray_New* EntityStateArray = *(EntityStateArray_New**)(Hack::WaW_BaseAddress + 0xbe1c0);
+	EntityStateArray_New* EntityStateArray = *(EntityStateArray_New**)(Hack::WaW_BaseAddress + Offsets::EntityStateArrayOffset);
 
 	int ZombieCount = 0;
 
 	for (int i = 0; i < 1024; i++)
 	{
-		if (EntityStateArray->EntityStateArray[i].eType == 16 && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
+		if (EntityStateArray->EntityStateArray[i].eType == EntityType::Zombie && EntityStateArray->EntityStateArray[i].CurrentHealth > 0)
 		{
 			ZombieCount++;
-			//printf("Zombie ID: %d\n", i);
 		}
 	}
 
