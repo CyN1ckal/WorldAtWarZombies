@@ -8,6 +8,7 @@ class Config {
   static bool ZombieCount;
   static bool TypeTracers;
   static int TypeNumber;
+  static bool InfiniteAmmo;
 
   static bool Initialize();
 };

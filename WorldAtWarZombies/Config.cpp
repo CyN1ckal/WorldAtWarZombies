@@ -7,6 +7,7 @@ bool Config::Initialize() {
   ZombieCount = true;
   TypeTracers = false;
   TypeNumber = 6;
+  InfiniteAmmo = false;
 
   return true;
 }

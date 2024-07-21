@@ -20,3 +20,33 @@ int Hack::GetNumZombies() {
 
   return ZombieCount;
 }
+
+/*
+    brief: Turns on the infinite ammo hack by patching the function which decreases the ammo amount
+*/
+bool Hack::ToggleInfiniteAmmo(bool b) {
+  uintptr_t DecrementAmmoFunction =
+      WaW_BaseAddress + Offsets::DecrementAmmoOffset;
+
+  if (b == true) {
+    DWORD protection;
+    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+                     PAGE_READWRITE, &protection);
+   memset((void*)DecrementAmmoFunction, 0x90, 7);
+    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+                     protection,nullptr);
+    Config::InfiniteAmmo = true;
+    return 1;
+
+  } else {
+    DWORD protection;
+    BYTE OriginalBytes[] = {0x89, 0x84, 0x8F, 0xFC, 0x05, 0x00, 0x00};
+    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+                     PAGE_READWRITE, &protection);
+    memcpy((void*)DecrementAmmoFunction, &OriginalBytes, 7);
+    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+                     protection, nullptr);
+    Config::InfiniteAmmo = false;
+    return 0;
+  }
+}

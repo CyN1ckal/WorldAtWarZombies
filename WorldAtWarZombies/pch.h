@@ -46,4 +46,6 @@
 
 #include "Hack.h"
 
+#include "Memory.h"
+
 #endif //PCH_H

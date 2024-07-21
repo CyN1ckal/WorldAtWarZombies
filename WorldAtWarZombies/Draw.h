@@ -21,7 +21,7 @@ class Draw {
   static bool DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType);
 
   // This is an array of fonts which can grow as necessary. Just 1 for now.
-  static ID3DXFont* pFont[1];
+  static ID3DXFont* pFont[3];
 
   // This is for my attempt at DrawTriangle
   static LPDIRECT3DVERTEXBUFFER9 v_buffer;
@@ -34,6 +34,10 @@ class Draw {
                            float X2, float Y2, float Width, D3DCOLOR Color);
   static void DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
                                float z, D3DCOLOR Color);
+
+  static void Watermark();
+
+  static bool InfiniteAmmoText(IDirect3DDevice9* pD3DDevice);
 };
 
 /*

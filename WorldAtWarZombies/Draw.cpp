@@ -6,8 +6,11 @@ bool PerfDrawInit = false;
    still. But  it takes 3d coordinates and makes them into 2d screen coordinates
    for esp drawing. Basically just a bunch of matrix math.
 */
-bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16],
-                         const int windowWidth, const int windowHeight) {
+bool Draw::WorldToScreen(const Vector3 pos,
+                         Vector2& screen,
+                         float matrix[16],
+                         const int windowWidth,
+                         const int windowHeight) {
   Vector4 clipCoords = {};
   clipCoords.x =
       pos.x * matrix[0] + pos.y * matrix[1] + pos.z * matrix[2] + matrix[3];
@@ -18,7 +21,8 @@ bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16],
   clipCoords.w =
       pos.x * matrix[12] + pos.y * matrix[13] + pos.z * matrix[14] + matrix[15];
 
-  if (clipCoords.w < 0.1f) return false;
+  if (clipCoords.w < 0.1f)
+    return false;
 
   Vector3 NDC = {};
   NDC.x = clipCoords.x / clipCoords.w;
@@ -35,7 +39,11 @@ bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16],
 /*
         brief: Clears a rectangular area of your monitor with 1 single color
 */
-void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color,
+void Draw::DrawFilledRect(int x,
+                          int y,
+                          int w,
+                          int h,
+                          D3DCOLOR color,
                           IDirect3DDevice9* dev) {
   D3DRECT BarRect = {x, y, x + w, y + h};
   dev->Clear(1, &BarRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET, color, 0, 0);
@@ -86,14 +94,21 @@ void Draw::DrawTriangle(IDirect3DDevice9* dev) {
 /*
         brief: Draw a line between 2 sets of screen coordinates
 */
-void Draw::DrawLine(float x1, float y1, float x2, float y2, float width,
-                    bool antialias, D3DCOLOR color, IDirect3DDevice9* dev) {
+void Draw::DrawLine(float x1,
+                    float y1,
+                    float x2,
+                    float y2,
+                    float width,
+                    bool antialias,
+                    D3DCOLOR color,
+                    IDirect3DDevice9* dev) {
   ID3DXLine* m_Line;
 
   D3DXCreateLine(dev, &m_Line);
   D3DXVECTOR2 line[] = {D3DXVECTOR2(x1, y1), D3DXVECTOR2(x2, y2)};
   m_Line->SetWidth(width);
-  if (antialias) m_Line->SetAntialias(1);
+  if (antialias)
+    m_Line->SetAntialias(1);
   m_Line->Begin();
   m_Line->Draw(line, 2, color);
   m_Line->End();
@@ -104,8 +119,7 @@ void Draw::DrawLine(float x1, float y1, float x2, float y2, float width,
         brief: Draw a colored healthbar for your local player
 */
 bool Draw::DrawHealthBar(IDirect3DDevice9* dev) {
-  if (!Hack::Local_Player->Time || Hack::Local_Player->Flags == 8 ||
-      Hack::Local_Player->Flags == 2)
+  if (!Hack::Local_Player->Time || Hack::Local_Player->CurrentHealth < 1)
     return false;
 
   Vector2 ScreenDimensions = {Hack::RefDef->Width, Hack::RefDef->Height};
@@ -115,6 +129,7 @@ bool Draw::DrawHealthBar(IDirect3DDevice9* dev) {
   float PercentageMaxHealth =
       static_cast<float>(Hack::Local_Player->CurrentHealth) /
       static_cast<float>(Hack::Local_Player->MaxHealth);
+
   int HealthBarWidth = 300;
   int HealthBarHeight = 24;
   int HealthBarOffsetFromBottom = 24;
@@ -247,7 +262,8 @@ bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType) {
    https://www.unknowncheats.me/forum/direct3d/60883-draw-drawprimtiveup-d3d9.html
 */
 HRESULT Draw::GenerateTexture(IDirect3DDevice9* pD3Ddev,
-                              IDirect3DTexture9** ppD3Dtex, DWORD colour32) {
+                              IDirect3DTexture9** ppD3Dtex,
+                              DWORD colour32) {
   if (FAILED(pD3Ddev->CreateTexture(8, 8, 1, 0, D3DFMT_A4R4G4B4,
                                     D3DPOOL_MANAGED, ppD3Dtex, NULL)))
     return E_FAIL;
@@ -259,7 +275,8 @@ HRESULT Draw::GenerateTexture(IDirect3DDevice9* pD3Ddev,
   D3DLOCKED_RECT d3dlr;
   (*ppD3Dtex)->LockRect(0, &d3dlr, 0, 0);
   WORD* pDst16 = (WORD*)d3dlr.pBits;
-  for (int xy = 0; xy < 8 * 8; xy++) *pDst16++ = colour16;
+  for (int xy = 0; xy < 8 * 8; xy++)
+    *pDst16++ = colour16;
   (*ppD3Dtex)->UnlockRect(0);
   return S_OK;
 }
@@ -270,8 +287,12 @@ HRESULT Draw::GenerateTexture(IDirect3DDevice9* pD3Ddev,
     vertex buffers and draws the rectangle on the texture we got from begin
    scene
 */
-void Draw::DrawRectPerf(IDirect3DDevice9* m_pD3Ddev, float x, float y, float w,
-                        float h, D3DCOLOR Color) {
+void Draw::DrawRectPerf(IDirect3DDevice9* m_pD3Ddev,
+                        float x,
+                        float y,
+                        float w,
+                        float h,
+                        D3DCOLOR Color) {
   D3DTLVERTEX qV[4] = {{(float)x, (float)(y + h), 0.0f, 1.0f, Color},
                        {(float)x, (float)y, 0.0f, 1.0f, Color},
                        {(float)(x + w), (float)(y + h), 0.0f, 1.0f, Color},
@@ -285,8 +306,11 @@ void Draw::DrawRectPerf(IDirect3DDevice9* m_pD3Ddev, float x, float y, float w,
                                     sizeof(D3DTLVERTEX));
 }
 
-void Draw::DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
-                            float z, D3DCOLOR Color) {
+void Draw::DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev,
+                            float x,
+                            float y,
+                            float z,
+                            D3DCOLOR Color) {
   D3DTLVERTEX qV[4] = {{(float)0.0f, (float)0.0f, 0.0f, 1.0f, Color},
                        {(float)0.0f, (float)100.0f, 0.0f, 1.0f, Color},
                        {(float)100.0f, (float)100.0f, 0.0f, 1.0f, Color},
@@ -305,8 +329,13 @@ void Draw::DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
     Instead of using the direct X line object, this creates a vertex buffer and
     renders it onto the texture we got with begin scene
 */
-void Draw::DrawLinePerf(IDirect3DDevice9* m_pD3Ddev, float X, float Y, float X2,
-                        float Y2, float Width, D3DCOLOR Color) {
+void Draw::DrawLinePerf(IDirect3DDevice9* m_pD3Ddev,
+                        float X,
+                        float Y,
+                        float X2,
+                        float Y2,
+                        float Width,
+                        D3DCOLOR Color) {
   D3DTLVERTEX qV[2] = {
       {(float)X, (float)Y, 0.0f, 1.0f, Color},
       {(float)X2, (float)Y2, 0.0f, 1.0f, Color},
@@ -317,4 +346,31 @@ void Draw::DrawLinePerf(IDirect3DDevice9* m_pD3Ddev, float X, float Y, float X2,
   m_pD3Ddev->SetFVF(D3DFVF_TL);
   m_pD3Ddev->SetTexture(0, Primitive);
   m_pD3Ddev->DrawPrimitiveUP(D3DPT_LINELIST, 2, qV, sizeof(D3DTLVERTEX));
+}
+
+/*
+    brief: Draw text at the top left whenever injected
+*/
+void Draw::Watermark() {
+  RECT TextLocation = {0, 0, 200, 100};
+  Draw::pFont[2]->DrawTextA(NULL, "Zombies Mod", -1, &TextLocation,
+                            DT_LEFT | DT_TOP, D3DCOLOR_ARGB(255, 186, 8, 189));
+}
+
+/*
+    brief: Draw text on screen for when infinite ammo is active
+*/
+bool Draw::InfiniteAmmoText(IDirect3DDevice9* pD3DDevice) {
+  std::string InfiniteAmmoString = "Infinite Ammo On!";
+
+  int StringPixelLength = InfiniteAmmoString.length() * 12;
+  int OffsetFromBottom =static_cast<int>( static_cast<float>(Hack::RefDef->Height) * 0.35);
+
+  RECT TextLocation = {Hack::RefDef->Width / 2 - StringPixelLength / 2,
+                       Hack::RefDef->Height - OffsetFromBottom - 24,
+                       Hack::RefDef->Width / 2 + StringPixelLength / 2,
+                       Hack::RefDef->Height - OffsetFromBottom};
+  pFont[2]->DrawTextA(NULL, InfiniteAmmoString.c_str(), -1, &TextLocation,
+                      DT_CENTER | DT_VCENTER, D3DCOLOR_ARGB(255, 255, 0, 0));
+  return 1;
 }

@@ -8,6 +8,7 @@ bool Config::LocalPlayerHealthBar;
 bool Config::ZombieCount;
 bool Config::TypeTracers;
 int Config::TypeNumber;
+bool Config::InfiniteAmmo;
 
 bool MyImGui::Initialized;
 
@@ -27,7 +28,7 @@ int Hook::windowHeight, Hook::windowWidth;
 int Hook::PreviousWindowHeight;
 int Hook::PreviousWindowWidth;
 
-ID3DXFont* Draw::pFont[1];
+ID3DXFont* Draw::pFont[3];
 
 extern bool PerfDrawInit;
 extern IDirect3DTexture9* Primitive;
@@ -48,14 +49,18 @@ HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
     brief: Hooked Window procedure. Needed for ImGui implementation
 */
 WndProc_Template WndProc_Original = nullptr;
-int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
+int __stdcall Hook::WndProc_Hooked(HWND hWnd,
+                                   UINT Msg,
+                                   int wParam,
                                    LPARAM lParam) {
   extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
       HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-  if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam)) return true;
+  if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam))
+    return true;
 
   if (ImGui::GetIO().WantCaptureMouse) {
-    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)) return true;
+    if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+      return true;
     return false;
   }
 
@@ -79,7 +84,8 @@ void __cdecl Hook::PrintRawToConsole_Hooked(int a1, const char* a2, int a3) {
 */
 PrintToConsole_Template PrintToConsole_Original = nullptr;
 void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe,
-                                          int StringToPrint, ...) {
+                                          int StringToPrint,
+                                          ...) {
   PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
 }
 
@@ -94,6 +100,12 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
                    OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
                    "Consolas", &Draw::pFont[0]);
+    D3DXCreateFont(pD3DDevice, 24, 10, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
+                   OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
+                   "Roboto", &Draw::pFont[1]);
+    D3DXCreateFont(pD3DDevice, 24, 10, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
+                   OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
+                   "Inconsolata Expanded", &Draw::pFont[2]);
     Hook::Initialized = true;
 
     D3DVIEWPORT9 viewport = {};
@@ -102,7 +114,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     PreviousWindowWidth = viewport.Height;
 
     Draw::DrawTriangle(pD3DDevice);
-
   }
 
   if (!MyImGui::Initialized) {
@@ -121,7 +132,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   // Render State Capture
   LPDIRECT3DSTATEBLOCK9 pStateBlock = NULL;
   pD3DDevice->CreateStateBlock(D3DSBT_ALL, &pStateBlock);
-  pStateBlock->Capture();  
+  pStateBlock->Capture();
 
   // ImGui Implementation
   ImGui_ImplDX9_NewFrame();
@@ -139,19 +150,29 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   ImGui::EndFrame();
 
   if (Hack::Local_Player->Time) {
-    if (Config::TracerLines) Draw::DrawZombieTracers(pD3DDevice);
+    if (Config::TracerLines)
+      Draw::DrawZombieTracers(pD3DDevice);
 
-    if(Config::TypeTracers) Draw::DrawTypeTracers(pD3DDevice, (EntityType)Config::TypeNumber);
+    if (Config::TypeTracers)
+      Draw::DrawTypeTracers(pD3DDevice, (EntityType)Config::TypeNumber);
 
-    if (Config::LocalPlayerHealthBar) Draw::DrawHealthBar(pD3DDevice);
+    if (Config::LocalPlayerHealthBar)
+      Draw::DrawHealthBar(pD3DDevice);
 
-    if (Config::ZombieCount) Draw::DrawZombieCount(pD3DDevice);
+    if (Config::ZombieCount)
+      Draw::DrawZombieCount(pD3DDevice);
+
+    if (Config::InfiniteAmmo)
+      Draw::InfiniteAmmoText(pD3DDevice);
   }
 
-  //Draw::DrawTrianglePerf(pD3DDevice, 0, 25, 30, D3DCOLOR_ARGB(255,255,255,255));
+  Draw::Watermark();
 
-  //Draw::DrawRectPerf(pD3DDevice, 0, 0, 100, 100,
-  //                   D3DCOLOR_ARGB(255, 255, 255, 255));
+  // Draw::DrawTrianglePerf(pD3DDevice, 0, 25, 30,
+  // D3DCOLOR_ARGB(255,255,255,255));
+
+  // Draw::DrawRectPerf(pD3DDevice, 0, 0, 100, 100,
+  //                    D3DCOLOR_ARGB(255, 255, 255, 255));
 
   ImGui::Render();
 
@@ -179,9 +200,11 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters) {
    the game is passing. Not really being used right now.
 */
 SetStreamSource_Template GetStreamSource_Original = nullptr;
-HRESULT APIENTRY Hook::GetStreamSource_Hook(
-    UINT StreamNumber, IDirect3DVertexBuffer9** ppStreamData,
-    UINT* pOffsetInBytes, UINT* pStride) {
+HRESULT APIENTRY
+Hook::GetStreamSource_Hook(UINT StreamNumber,
+                           IDirect3DVertexBuffer9** ppStreamData,
+                           UINT* pOffsetInBytes,
+                           UINT* pStride) {
   return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes,
                                   pStride);
 }
@@ -270,8 +293,7 @@ bool Hook::Hook_DirectX() {
   printf("BeginSceneFunction Address: %X\n", (uintptr_t)BeginSceneFunction);
 
   if (MH_CreateHook(BeginSceneFunction, &BeginScene_Hooked,
-                    reinterpret_cast<LPVOID*>(&BeginScene_Original)) !=
-      MH_OK) {
+                    reinterpret_cast<LPVOID*>(&BeginScene_Original)) != MH_OK) {
     printf("Error Creating BeginSceneFunction Hook! Exiting.\n");
     Unhook_DirectX();
     return 0;
@@ -282,7 +304,6 @@ bool Hook::Hook_DirectX() {
     Unhook_DirectX();
     return 0;
   }
-
 
   return 1;
 }
@@ -305,7 +326,8 @@ void Hook::Unhook_DirectX() {
 BOOL CALLBACK Hook::enumWind(const HWND handle, LPARAM lp) {
   DWORD procID;
   GetWindowThreadProcessId(handle, &procID);
-  if (GetCurrentProcessId() != procID) return TRUE;
+  if (GetCurrentProcessId() != procID)
+    return TRUE;
 
   window = handle;
   return FALSE;
@@ -320,7 +342,8 @@ HWND Hook::GetProcessWindow() {
   EnumWindows(enumWind, NULL);
 
   RECT size;
-  if (window == nullptr) return nullptr;
+  if (window == nullptr)
+    return nullptr;
 
   GetWindowRect(window, &size);
 
@@ -337,10 +360,12 @@ HWND Hook::GetProcessWindow() {
         brief: Getting D3D9Device using a dummy device
 */
 BOOL Hook::GetD3D9Device(void** pTable, const size_t size) {
-  if (!pTable) return FALSE;
+  if (!pTable)
+    return FALSE;
 
   IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-  if (!pD3D) return FALSE;
+  if (!pD3D)
+    return FALSE;
 
   IDirect3DDevice9* pDummyDevice = nullptr;
 
