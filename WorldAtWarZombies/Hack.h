@@ -6,7 +6,6 @@ typedef void(__cdecl* PrintRawToConsole_Template)(int a1, const char* a2, int a3
 class Hack
 {
 public:
-
 	static inline PrintToConsole_Template PrintToConsole = reinterpret_cast<PrintToConsole_Template>(Offsets::PrintToConsoleOffset);
 	static inline PrintErrorToConsole_Template PrintErrorToConsole = reinterpret_cast<PrintErrorToConsole_Template>(Offsets::PrintErrorToConsoleOffset);
 	static inline PrintRawToConsole_Template PrintRawToConsole = reinterpret_cast<PrintRawToConsole_Template>(Offsets::PrintRawToConsoleOffset);

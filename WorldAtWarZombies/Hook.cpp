@@ -1,10 +1,15 @@
 #include "pch.h"
 
-// Global Variables
-bool Hook::Initialized;
+// Declarations from the static classes
+
+bool Config::TracerLines;
+bool Config::MasterImgui;
+bool Config::LocalPlayerHealthBar;
+bool Config::ZombieCount;
+
 bool MyImGui::Initialized;
 
-// Declarations from the static class
+bool Hook::Initialized;
 HWND Hook::window;
 void* Hook::d3d9Device[119];
 void* Hook::EndSceneFunction;
@@ -16,6 +21,8 @@ void* Hook::PrintToScreen_MaybeFunction;
 void* Hook::WndProcFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
+int Hook::PreviousWindowHeight;
+int Hook::PreviousWindowWidth;
 
 ID3DXFont* Draw::pFont[1];
 
@@ -65,11 +72,18 @@ void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe, int StringToPr
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 {
+
 	if (!Hook::Initialized)
 	{
 		pD3DDevice = pDevice;
 		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Consolas", &Draw::pFont[0]);
 		Hook::Initialized = true;
+
+		D3DVIEWPORT9 viewport = {};
+		pD3DDevice->GetViewport(&viewport);
+		PreviousWindowHeight = viewport.Height;
+		PreviousWindowWidth = viewport.Height;
+
 	}
 
 	if (!MyImGui::Initialized)
@@ -77,21 +91,27 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 		MyImGui::Initialize(pDevice);
 	}
 
+	//Hack::PrintRawToConsole(16, "test\n", 0);
+	//Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
+	//Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+	//Hack::PrintAliveEnts();
+
 	if (GetAsyncKeyState(VK_INSERT) & 1)
 	{
-		//Hack::PrintRawToConsole(16, "test\n", 0);
-		//Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
-		//Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
-		//Hack::PrintAliveEnts();
+		Config::MasterImgui = !Config::MasterImgui;
 	}
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
+	if (Config::MasterImgui)
+	{
+		ImGui::ShowDemoWindow();
 
-	MyImGui::ShowMyWindow();
+		MyImGui::ShowMyWindow();
+	}
+
 
 	ImGui::EndFrame();
 
@@ -107,13 +127,13 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 
 	if (Hack::Local_Player->Time)
 	{
-		Draw::DrawZombieTracers(pD3DDevice);
+		if (Config::TracerLines) Draw::DrawZombieTracers(pD3DDevice);
 
 		//Draw::DrawTypeTracers(pD3DDevice, 16);
 
-		Draw::DrawHealthBar(pD3DDevice);
+		if(Config::LocalPlayerHealthBar) Draw::DrawHealthBar(pD3DDevice);
 
-		Draw::DrawZombieCount(pD3DDevice);
+		if(Config::ZombieCount) Draw::DrawZombieCount(pD3DDevice);
 	}
 
 	//pDevice->SetTexture(0, texture);

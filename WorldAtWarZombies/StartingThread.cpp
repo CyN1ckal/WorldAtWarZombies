@@ -11,6 +11,7 @@ DWORD WINAPI StartingThread(HMODULE hModule)
 {
 	MyImGui::Initialized = false;
 	Hook::Initialized = false;
+	Config::Initialize();
 
 	FILE* f;
 
@@ -35,6 +36,7 @@ DWORD WINAPI StartingThread(HMODULE hModule)
 			break;
 		}
 		Sleep(100);
+
 	}
 
 	printf("[-] Unhooking!\n");

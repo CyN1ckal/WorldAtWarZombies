@@ -5,6 +5,9 @@ bool MyImGui::ShowMyWindow()
 
 	ImGui::Begin("My Window");
 	ImGui::Text("Test Text");
+	ImGui::Checkbox("Tracer Lines", &Config::TracerLines);
+	ImGui::Checkbox("Health Bar", &Config::LocalPlayerHealthBar);
+	ImGui::Checkbox("Zombie Count", &Config::ZombieCount);
 	ImGui::End();
 
 	return true;

@@ -32,6 +32,8 @@ public:
 	static void* WndProcFunction;
 	static IDirect3DDevice9* pD3DDevice;
 	static int windowHeight, windowWidth;
+	static int PreviousWindowWidth;
+	static int PreviousWindowHeight;
 
 	// Hook enable/disable
 	static bool Hook_DirectX();
@@ -51,5 +53,6 @@ public:
 	static BOOL GetD3D9Device(void** pTable, size_t size);
 	static BOOL CALLBACK enumWind(const HWND handle, LPARAM lp);
 	static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 };
 
