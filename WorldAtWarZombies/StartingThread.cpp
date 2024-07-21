@@ -9,6 +9,8 @@ void CleanUpRoutine(HMODULE hModule, FILE* f)
 
 DWORD WINAPI StartingThread(HMODULE hModule)
 {
+	MyImGui::Initialized = false;
+
 	FILE* f;
 
 	AllocConsole();

@@ -2,6 +2,7 @@
 
 // Global Variables
 bool bInit = false;
+bool MyImGui::Initialized;
 
 // Declarations from the static class
 HWND Hook::window;
@@ -12,10 +13,22 @@ void* Hook::SetStreamSourceFunction;
 void* Hook::PrintToConsoleFunction;
 void* Hook::PrintRawToConsoleFunction;
 void* Hook::PrintToScreen_MaybeFunction;
+void* Hook::WndProcFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
+
 ID3DXFont* Draw::pFont[1];
+
+WndProc_Template WndProc_Original = nullptr;
+int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam, LPARAM lParam)
+{
+	extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam))
+		return true;
+
+	return WndProc_Original(hWnd, Msg, wParam, lParam);
+}
 
 /*
 	brief: This is the print to console function but after the string is already formatted. This is the "raw" string.
@@ -50,14 +63,39 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Consolas", &Draw::pFont[0]);
 	}
 
-	if (GetAsyncKeyState(VK_INSERT) & 1)
+	if (!MyImGui::Initialized)
 	{
-		Hack::PrintRawToConsole(16, "test\n", 0);
-		Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
-		Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+		D3DDEVICE_CREATION_PARAMETERS CP;
+		pD3DDevice->GetCreationParameters(&CP);
+		HWND window = CP.hFocusWindow;
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.IniFilename = nullptr;
+		io.Fonts->AddFontDefault();
+		ImGui::StyleColorsDark();
+		ImGui_ImplWin32_Init(window);
+		ImGui_ImplDX9_Init(pD3DDevice);
+		MyImGui::Initialized = true;
 	}
 
-	//Hack::PrintAliveEnts();
+	if (GetAsyncKeyState(VK_INSERT) & 1)
+	{
+		//Hack::PrintRawToConsole(16, "test\n", 0);
+		//Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
+		//Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+		//Hack::PrintAliveEnts();
+	}
+
+	ImGui_ImplDX9_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::ShowDemoWindow();
+
+	MyImGui::ShowMyWindow();
+
+	ImGui::EndFrame();
+
 
 	//IDirect3DStateBlock9* stateBlock = nullptr;
 	//IDirect3DPixelShader9* pixelShader = nullptr;
@@ -82,6 +120,10 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	//pDevice->SetTexture(0, texture);
 	//pDevice->SetPixelShader(pixelShader);
 	//stateBlock->Apply();
+
+	ImGui::Render();
+
+	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
 	return EndScene_Original(pDevice);
 }
@@ -116,6 +158,9 @@ void Hook::EnableMiscHooks()
 	PrintRawToConsoleFunction = (void*)Offsets::PrintRawToConsoleOffset;
 	MH_CreateHook(PrintRawToConsoleFunction, &PrintRawToConsole_Hooked, reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
 	MH_EnableHook(PrintRawToConsoleFunction);
+	WndProcFunction = (void*)(Hack::WaW_BaseAddress + Offsets::WndProcOffset);
+	MH_CreateHook(WndProcFunction, &WndProc_Hooked, reinterpret_cast<LPVOID*>(&WndProc_Original));
+	MH_EnableHook(WndProcFunction);
 }
 
 /*
@@ -191,6 +236,9 @@ void Hook::Unhook_DirectX()
 {
 	MH_DisableHook(MH_ALL_HOOKS);
 	MH_Uninitialize();
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 /*
@@ -267,6 +315,4 @@ BOOL Hook::GetD3D9Device(void** pTable, const size_t size)
 	pD3D->Release();
 	return TRUE;
 }
-
-
 

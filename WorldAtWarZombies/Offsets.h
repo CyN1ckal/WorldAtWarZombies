@@ -12,4 +12,5 @@ namespace Offsets
 	static uintptr_t LocalPlayerOffset = 0x136c6f0;
 	static uintptr_t ViewMatrixOffset = 0x008E870C;
 	static uintptr_t EntityStateArrayOffset = 0xBE1C0;
+	static uintptr_t WndProcOffset = 0x206BE0;
 }

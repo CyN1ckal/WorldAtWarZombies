@@ -16,11 +16,19 @@
 #include <d3dx9.h>
 #pragma comment(lib, "d3dx9.lib")
 
+#include <tchar.h>
+
 #include <iostream>
 #include <string>
 #include <format>
 
 #include <MinHook.h>
+
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
+
+#include "MyImGui.h"
 
 #include "Offsets.h"
 
