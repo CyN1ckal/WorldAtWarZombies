@@ -18,6 +18,8 @@ typedef int(__stdcall* WndProc_Template)(HWND hWnd, UINT Msg, int wParam, LPARAM
 class Hook
 {
 public:
+	static bool Initialized;
+
 	// Variables used in hooking
 	static HWND window;
 	static void* d3d9Device[119];

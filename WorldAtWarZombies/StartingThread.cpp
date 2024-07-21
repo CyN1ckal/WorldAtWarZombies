@@ -10,6 +10,7 @@ void CleanUpRoutine(HMODULE hModule, FILE* f)
 DWORD WINAPI StartingThread(HMODULE hModule)
 {
 	MyImGui::Initialized = false;
+	Hook::Initialized = false;
 
 	FILE* f;
 

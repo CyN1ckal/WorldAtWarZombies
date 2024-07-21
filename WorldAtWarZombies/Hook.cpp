@@ -1,7 +1,7 @@
 #include "pch.h"
 
 // Global Variables
-bool bInit = false;
+bool Hook::Initialized;
 bool MyImGui::Initialized;
 
 // Declarations from the static class
@@ -17,9 +17,11 @@ void* Hook::WndProcFunction;
 IDirect3DDevice9* Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 
-
 ID3DXFont* Draw::pFont[1];
 
+/*
+	brief: Hooked Window procedure. Needed for ImGui implementation
+*/
 WndProc_Template WndProc_Original = nullptr;
 int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam, LPARAM lParam)
 {
@@ -56,26 +58,16 @@ void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe, int StringToPr
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 {
-	if (!bInit)
+	if (!Hook::Initialized)
 	{
 		pD3DDevice = pDevice;
-		bInit = true;
+		Hook::Initialized = true;
 		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Consolas", &Draw::pFont[0]);
 	}
 
 	if (!MyImGui::Initialized)
 	{
-		D3DDEVICE_CREATION_PARAMETERS CP;
-		pD3DDevice->GetCreationParameters(&CP);
-		HWND window = CP.hFocusWindow;
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		io.IniFilename = nullptr;
-		io.Fonts->AddFontDefault();
-		ImGui::StyleColorsDark();
-		ImGui_ImplWin32_Init(window);
-		ImGui_ImplDX9_Init(pD3DDevice);
-		MyImGui::Initialized = true;
+		MyImGui::Initialize(pDevice);
 	}
 
 	if (GetAsyncKeyState(VK_INSERT) & 1)
