@@ -29,6 +29,13 @@ int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam, LPARAM lPara
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam))
 		return true;
 
+	if (ImGui::GetIO().WantCaptureMouse)
+	{
+		if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
+			return true;
+		return false;
+	}
+
 	return WndProc_Original(hWnd, Msg, wParam, lParam);
 }
 
@@ -61,8 +68,8 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice)
 	if (!Hook::Initialized)
 	{
 		pD3DDevice = pDevice;
-		Hook::Initialized = true;
 		D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, "Consolas", &Draw::pFont[0]);
+		Hook::Initialized = true;
 	}
 
 	if (!MyImGui::Initialized)
