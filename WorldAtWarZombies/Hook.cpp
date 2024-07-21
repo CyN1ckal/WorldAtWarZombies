@@ -6,6 +6,8 @@ bool Config::TracerLines;
 bool Config::MasterImgui;
 bool Config::LocalPlayerHealthBar;
 bool Config::ZombieCount;
+bool Config::TypeTracers;
+int Config::TypeNumber;
 
 bool MyImGui::Initialized;
 
@@ -15,6 +17,7 @@ void* Hook::d3d9Device[119];
 void* Hook::EndSceneFunction;
 void* Hook::ResetFunction;
 void* Hook::SetStreamSourceFunction;
+void* Hook::BeginSceneFunction;
 void* Hook::PrintToConsoleFunction;
 void* Hook::PrintRawToConsoleFunction;
 void* Hook::PrintToScreen_MaybeFunction;
@@ -26,8 +29,23 @@ int Hook::PreviousWindowWidth;
 
 ID3DXFont* Draw::pFont[1];
 
+extern bool PerfDrawInit;
+extern IDirect3DTexture9* Primitive;
 /*
-        brief: Hooked Window procedure. Needed for ImGui implementation
+    brief: BeginScene hook needed for getting texture
+*/
+BeginScene_Template BeginScene_Original = nullptr;
+HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
+  if (!PerfDrawInit && Hook::Initialized) {
+    Draw::GenerateTexture(pD3DDevice, &Primitive,
+                          D3DCOLOR_ARGB(255, 255, 255, 255));
+    Initialized = true;
+  }
+  return BeginScene_Original(m_pD3Ddev);
+}
+
+/*
+    brief: Hooked Window procedure. Needed for ImGui implementation
 */
 WndProc_Template WndProc_Original = nullptr;
 int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
@@ -82,6 +100,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     pD3DDevice->GetViewport(&viewport);
     PreviousWindowHeight = viewport.Height;
     PreviousWindowWidth = viewport.Height;
+
+    Draw::DrawTriangle(pD3DDevice);
+
   }
 
   if (!MyImGui::Initialized) {
@@ -97,10 +118,18 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     Config::MasterImgui = !Config::MasterImgui;
   }
 
+  // Render State Capture
+  LPDIRECT3DSTATEBLOCK9 pStateBlock = NULL;
+  pD3DDevice->CreateStateBlock(D3DSBT_ALL, &pStateBlock);
+  pStateBlock->Capture();  
+
+  // ImGui Implementation
   ImGui_ImplDX9_NewFrame();
   ImGui_ImplWin32_NewFrame();
+
   ImGui::NewFrame();
 
+  // My ImGui Windows
   if (Config::MasterImgui) {
     ImGui::ShowDemoWindow();
 
@@ -109,31 +138,27 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
   ImGui::EndFrame();
 
-  // IDirect3DStateBlock9* stateBlock = nullptr;
-  // IDirect3DPixelShader9* pixelShader = nullptr;
-  // IDirect3DBaseTexture9* texture = nullptr;
-
-  // pDevice->GetTexture(0, &texture);
-  // pDevice->GetPixelShader(&pixelShader);
-  // pDevice->CreateStateBlock(D3DSBT_ALL, &stateBlock);
-
   if (Hack::Local_Player->Time) {
     if (Config::TracerLines) Draw::DrawZombieTracers(pD3DDevice);
 
-    // Draw::DrawTypeTracers(pD3DDevice, 16);
+    if(Config::TypeTracers) Draw::DrawTypeTracers(pD3DDevice, (EntityType)Config::TypeNumber);
 
     if (Config::LocalPlayerHealthBar) Draw::DrawHealthBar(pD3DDevice);
 
     if (Config::ZombieCount) Draw::DrawZombieCount(pD3DDevice);
   }
 
-  // pDevice->SetTexture(0, texture);
-  // pDevice->SetPixelShader(pixelShader);
-  // stateBlock->Apply();
+  //Draw::DrawTrianglePerf(pD3DDevice, 0, 25, 30, D3DCOLOR_ARGB(255,255,255,255));
+
+  //Draw::DrawRectPerf(pD3DDevice, 0, 0, 100, 100,
+  //                   D3DCOLOR_ARGB(255, 255, 255, 255));
 
   ImGui::Render();
 
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
+  pStateBlock->Apply();    // apply old states
+  pStateBlock->Release();  // delete
 
   return EndScene_Original(pDevice);
 }
@@ -240,6 +265,25 @@ bool Hook::Hook_DirectX() {
     return 0;
   }
 
+  BeginSceneFunction = d3d9Device[41];
+
+  printf("BeginSceneFunction Address: %X\n", (uintptr_t)BeginSceneFunction);
+
+  if (MH_CreateHook(BeginSceneFunction, &BeginScene_Hooked,
+                    reinterpret_cast<LPVOID*>(&BeginScene_Original)) !=
+      MH_OK) {
+    printf("Error Creating BeginSceneFunction Hook! Exiting.\n");
+    Unhook_DirectX();
+    return 0;
+  }
+
+  if (MH_EnableHook(BeginSceneFunction) != MH_OK) {
+    printf("Error Enabling BeginSceneFunction Hook! Exiting.\n");
+    Unhook_DirectX();
+    return 0;
+  }
+
+
   return 1;
 }
 
@@ -249,6 +293,7 @@ bool Hook::Hook_DirectX() {
 void Hook::Unhook_DirectX() {
   MH_DisableHook(MH_ALL_HOOKS);
   MH_Uninitialize();
+  Draw::pFont[0]->Release();
   ImGui_ImplDX9_Shutdown();
   ImGui_ImplWin32_Shutdown();
   ImGui::DestroyContext();

@@ -15,6 +15,7 @@ typedef void(__cdecl* PrintRawToConsole_Template)(int a1, const char* a2,
                                                   int a3);
 typedef int(__stdcall* WndProc_Template)(HWND hWnd, UINT Msg, int wParam,
                                          LPARAM lParam);
+typedef HRESULT(__stdcall* BeginScene_Template)(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
 /*
         brief: Hook class containing all the variables and functions related to
@@ -29,6 +30,7 @@ class Hook {
   static void* d3d9Device[119];
   static void* EndSceneFunction;
   static void* ResetFunction;
+  static void* BeginSceneFunction;
   static void* SetStreamSourceFunction;
   static void* PrintToConsoleFunction;
   static void* PrintRawToConsoleFunction;
@@ -55,6 +57,7 @@ class Hook {
                        UINT* pOffsetInBytes, UINT* pStride);
   static int __stdcall WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
                                       LPARAM lParam);
+  static HRESULT __stdcall BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
   // "Helper" Functions. Not exactly hooking but used in class.
   static HWND GetProcessWindow();

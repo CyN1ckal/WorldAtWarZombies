@@ -1,5 +1,6 @@
 #include "pch.h"
-
+IDirect3DTexture9* Primitive = NULL;
+bool PerfDrawInit = false;
 /*
         brief: Copy and pasted world to screen... Need to do this by myself
    still. But  it takes 3d coordinates and makes them into 2d screen coordinates
@@ -32,7 +33,7 @@ bool Draw::WorldToScreen(const Vector3 pos, Vector2& screen, float matrix[16],
 }
 
 /*
-        brief: Fills a rectangular area of your monitor with 1 single color
+        brief: Clears a rectangular area of your monitor with 1 single color
 */
 void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color,
                           IDirect3DDevice9* dev) {
@@ -45,42 +46,41 @@ void Draw::DrawFilledRect(int x, int y, int w, int h, D3DCOLOR color,
    but then gets like drawn over or something? Need to figure it out a bit more.
 */
 LPDIRECT3DVERTEXBUFFER9 Draw::v_buffer;
-void Draw::DrawTriangle(D3DCOLOR color, IDirect3DDevice9* dev) {
-  CustomVertex OurVertices[] = {
+void Draw::DrawTriangle(IDirect3DDevice9* dev) {
+  CUSTOMVERTEX OurVertices[] = {
       {
-          320.0f,
-          50.0f,
+          400.0f,
+          62.5f,
+          0.5f,
           1.0f,
           D3DCOLOR_XRGB(0, 0, 255),
       },
       {
-          520.0f,
-          400.0f,
+          650.0f,
+          500.0f,
+          0.5f,
           1.0f,
           D3DCOLOR_XRGB(0, 255, 0),
       },
       {
-          120.0f,
-          400.0f,
+          150.0f,
+          500.0f,
+          0.5f,
           1.0f,
           D3DCOLOR_XRGB(255, 0, 0),
       },
   };
 
-  dev->CreateVertexBuffer(3 * sizeof(CustomVertex), 0, CUSTOMFVF,
+  // create a vertex buffer interface called v_buffer
+  dev->CreateVertexBuffer(3 * sizeof(CUSTOMVERTEX), 0, CUSTOMFVF,
                           D3DPOOL_MANAGED, &v_buffer, NULL);
 
-  void* pVoid;
-  v_buffer->Lock(0, 0, &pVoid, 0);
+  VOID* pVoid;  // a void pointer
 
+  // lock v_buffer and load the vertices into it
+  v_buffer->Lock(0, 0, (void**)&pVoid, 0);
   memcpy(pVoid, OurVertices, sizeof(OurVertices));
   v_buffer->Unlock();
-
-  dev->SetFVF(CUSTOMFVF);
-
-  dev->SetStreamSource(0, v_buffer, 0, sizeof(CustomVertex));
-
-  dev->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 1);
 }
 
 /*
@@ -192,9 +192,15 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9* dev) {
       if (WorldToScreen(EntityStateArray->EntityStateArray[i].position, screen,
                         Hack::pViewMatrix, Hack::RefDef->Width,
                         Hack::RefDef->Height)) {
-        Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x,
-                       screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252),
-                       dev);
+        if (EntityStateArray->EntityStateArray[i].CurrentHealth < 152) {
+          Draw::DrawLinePerf(dev, Hack::RefDef->Width / 2, Hack::RefDef->Height,
+                             screen.x, screen.y, 3,
+                             D3DCOLOR_ARGB(255, 255, 66, 66));
+        } else {
+          Draw::DrawLinePerf(dev, Hack::RefDef->Width / 2, Hack::RefDef->Height,
+                             screen.x, screen.y, 3,
+                             D3DCOLOR_ARGB(255, 255, 255, 255));
+        }
       }
     }
   }
@@ -212,15 +218,14 @@ bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType) {
       *(EntityStateArray_New**)(Hack::WaW_BaseAddress + 0xbe1c0);
 
   for (int i = 0; i < 1024; i++) {
-    if (EntityStateArray->EntityStateArray[i].eType == eType &&
-        EntityStateArray->EntityStateArray[i].CurrentHealth > 0) {
+    if (EntityStateArray->EntityStateArray[i].eType == eType) {
       Vector2 screen = {};
       if (WorldToScreen(EntityStateArray->EntityStateArray[i].position, screen,
                         Hack::pViewMatrix, Hack::RefDef->Width,
                         Hack::RefDef->Height)) {
-        Draw::DrawLine(Hack::RefDef->Width / 2, Hack::RefDef->Height, screen.x,
-                       screen.y, 2, false, D3DCOLOR_ARGB(255, 182, 3, 252),
-                       dev);
+        Draw::DrawLinePerf(dev, Hack::RefDef->Width / 2, Hack::RefDef->Height,
+                           screen.x, screen.y, 3,
+                           D3DCOLOR_ARGB(125, 255, 255, 255));
         RECT rect;
         SetRect(&rect, screen.x, screen.y, screen.x + 120, screen.y + 100);
         std::string TypeString =
@@ -234,4 +239,82 @@ bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType) {
   }
 
   return 1;
+}
+
+/*
+    brief:
+    Copy and pasted from
+   https://www.unknowncheats.me/forum/direct3d/60883-draw-drawprimtiveup-d3d9.html
+*/
+HRESULT Draw::GenerateTexture(IDirect3DDevice9* pD3Ddev,
+                              IDirect3DTexture9** ppD3Dtex, DWORD colour32) {
+  if (FAILED(pD3Ddev->CreateTexture(8, 8, 1, 0, D3DFMT_A4R4G4B4,
+                                    D3DPOOL_MANAGED, ppD3Dtex, NULL)))
+    return E_FAIL;
+
+  WORD colour16 = ((WORD)((colour32 >> 28) & 0xF) << 12) |
+                  (WORD)(((colour32 >> 20) & 0xF) << 8) |
+                  (WORD)(((colour32 >> 12) & 0xF) << 4) |
+                  (WORD)(((colour32 >> 4) & 0xF) << 0);
+  D3DLOCKED_RECT d3dlr;
+  (*ppD3Dtex)->LockRect(0, &d3dlr, 0, 0);
+  WORD* pDst16 = (WORD*)d3dlr.pBits;
+  for (int xy = 0; xy < 8 * 8; xy++) *pDst16++ = colour16;
+  (*ppD3Dtex)->UnlockRect(0);
+  return S_OK;
+}
+
+/*
+    brief: Draw a rectangle on the screen more performantly
+    Instead of clearing an entire area of the display buffer, this creates a
+    vertex buffers and draws the rectangle on the texture we got from begin
+   scene
+*/
+void Draw::DrawRectPerf(IDirect3DDevice9* m_pD3Ddev, float x, float y, float w,
+                        float h, D3DCOLOR Color) {
+  D3DTLVERTEX qV[4] = {{(float)x, (float)(y + h), 0.0f, 1.0f, Color},
+                       {(float)x, (float)y, 0.0f, 1.0f, Color},
+                       {(float)(x + w), (float)(y + h), 0.0f, 1.0f, Color},
+                       {(float)(x + w), (float)y, 0.0f, 1.0f, Color}};
+  const DWORD D3DFVF_TL = D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+  m_pD3Ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+  m_pD3Ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+  m_pD3Ddev->SetFVF(D3DFVF_TL);
+  (SIZE) m_pD3Ddev->SetTexture(0, Primitive);
+  (SIZE) m_pD3Ddev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, qV,
+                                    sizeof(D3DTLVERTEX));
+}
+
+void Draw::DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
+                            float z, D3DCOLOR Color) {
+  D3DTLVERTEX qV[4] = {{(float)0.0f, (float)0.0f, 0.0f, 1.0f, Color},
+                       {(float)0.0f, (float)100.0f, 0.0f, 1.0f, Color},
+                       {(float)100.0f, (float)100.0f, 0.0f, 1.0f, Color},
+                       {(float)200.0f, (float)200.0f, 0.0f, 1.0f, Color}};
+  const DWORD D3DFVF_TL = D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+  m_pD3Ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+  m_pD3Ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+  m_pD3Ddev->SetFVF(D3DFVF_TL);
+  (SIZE) m_pD3Ddev->SetTexture(0, Primitive);
+  (SIZE) m_pD3Ddev->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, qV,
+                                    sizeof(D3DTLVERTEX));
+}
+
+/*
+    brief: Draws line connecting 2 vertices more performantly.
+    Instead of using the direct X line object, this creates a vertex buffer and
+    renders it onto the texture we got with begin scene
+*/
+void Draw::DrawLinePerf(IDirect3DDevice9* m_pD3Ddev, float X, float Y, float X2,
+                        float Y2, float Width, D3DCOLOR Color) {
+  D3DTLVERTEX qV[2] = {
+      {(float)X, (float)Y, 0.0f, 1.0f, Color},
+      {(float)X2, (float)Y2, 0.0f, 1.0f, Color},
+  };
+  const DWORD D3DFVF_TL = D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+  m_pD3Ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+  m_pD3Ddev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+  m_pD3Ddev->SetFVF(D3DFVF_TL);
+  m_pD3Ddev->SetTexture(0, Primitive);
+  m_pD3Ddev->DrawPrimitiveUP(D3DPT_LINELIST, 2, qV, sizeof(D3DTLVERTEX));
 }

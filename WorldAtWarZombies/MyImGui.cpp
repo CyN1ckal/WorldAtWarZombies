@@ -6,6 +6,8 @@ bool MyImGui::ShowMyWindow() {
   ImGui::Checkbox("Tracer Lines", &Config::TracerLines);
   ImGui::Checkbox("Health Bar", &Config::LocalPlayerHealthBar);
   ImGui::Checkbox("Zombie Count", &Config::ZombieCount);
+  ImGui::Checkbox("Type Tracers", &Config::TypeTracers);
+  ImGui::InputInt("Type Number", &Config::TypeNumber);
   ImGui::End();
 
   return true;

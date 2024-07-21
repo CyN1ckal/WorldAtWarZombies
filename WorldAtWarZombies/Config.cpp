@@ -5,6 +5,8 @@ bool Config::Initialize() {
   MasterImgui = true;
   LocalPlayerHealthBar = true;
   ZombieCount = true;
+  TypeTracers = false;
+  TypeNumber = 6;
 
   return true;
 }
