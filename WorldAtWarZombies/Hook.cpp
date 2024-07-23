@@ -38,9 +38,10 @@ extern IDirect3DTexture9* Primitive;
 BeginScene_Template BeginScene_Original = nullptr;
 HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
   if (!PerfDrawInit && Hook::Initialized) {
+    printf("Generating Texture!\n");
     Draw::GenerateTexture(pD3DDevice, &Primitive,
                           D3DCOLOR_ARGB(255, 255, 255, 255));
-    Initialized = true;
+    PerfDrawInit = true;
   }
   return BeginScene_Original(m_pD3Ddev);
 }
@@ -315,6 +316,8 @@ void Hook::Unhook_DirectX() {
   MH_DisableHook(MH_ALL_HOOKS);
   MH_Uninitialize();
   Draw::pFont[0]->Release();
+  Draw::pFont[1]->Release();
+  Draw::pFont[2]->Release();
   ImGui_ImplDX9_Shutdown();
   ImGui_ImplWin32_Shutdown();
   ImGui::DestroyContext();
