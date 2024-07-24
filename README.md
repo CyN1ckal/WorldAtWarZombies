@@ -16,3 +16,5 @@ And yes, I am aware that console commands can achieve 90% of what im doing... Bu
 
 To Use:
 Compile the project in x86 Release, and inject into CoDWaW.exe with your favorite injector.
+
+![Example Picture of Mod](https://cdn.discordapp.com/attachments/302815752501854219/1265728971274850435/ZombiesMod.PNG?ex=66a29176&is=66a13ff6&hm=ae12cccdeb1d4e2ecb8cabaa87e21dafcb2d8b731479abf092b4cfe77223a440&)
