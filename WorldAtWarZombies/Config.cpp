@@ -8,6 +8,7 @@ bool Config::Initialize() {
   TypeTracers = false;
   TypeNumber = 6;
   InfiniteAmmo = false;
+  DebugVisuals = false;
 
   return true;
 }

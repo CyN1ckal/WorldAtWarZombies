@@ -9,6 +9,7 @@ bool Config::ZombieCount;
 bool Config::TypeTracers;
 int Config::TypeNumber;
 bool Config::InfiniteAmmo;
+bool Config::DebugVisuals;
 
 bool MyImGui::Initialized;
 
@@ -89,6 +90,7 @@ void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe,
   PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
 }
 
+int AimbotDelayInt = 0;
 /*
         brief: The main EndScene hook. This is the hook which is called every
    frame, so this is where I do the hack logic as well.
@@ -141,6 +143,20 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   }
 
   ImGui::EndFrame();
+
+  if (GetAsyncKeyState(VK_XBUTTON2)&1)
+  {
+    
+  }
+
+  AimbotDelayInt++;
+  if (AimbotDelayInt % 5 == 0)
+    Hack::AimAtClosestZombie();
+
+  if (Config::DebugVisuals) {
+    Debug::PrintFacingDirection();
+    Debug::PrintPlayerCoordinates();
+  }
 
   if (Hack::Local_Player->Time) {
     if (Config::TracerLines)

@@ -9,6 +9,7 @@ MyImGui::ShowMyWindow()
   ImGui::Checkbox("Zombie Count", &Config::ZombieCount);
   ImGui::Checkbox("Type Tracers", &Config::TypeTracers);
   ImGui::InputInt("Type Number", &Config::TypeNumber);
+  ImGui::Checkbox("Debug Visuals", &Config::DebugVisuals);
 
   if (ImGui::Button("Toggle Infinite Ammo")) {
     Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);

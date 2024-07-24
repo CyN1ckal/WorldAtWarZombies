@@ -29,6 +29,7 @@ class Hack {
   static int GetNumZombies();
   static bool ToggleInfiniteAmmo(bool b);
   static bool ResetViewAngles();
+  static bool AimAtClosestZombie();
 
  private:
 };

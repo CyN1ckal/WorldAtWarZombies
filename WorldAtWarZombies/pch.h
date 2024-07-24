@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <format>
+#include <vector>
 
 #include <MinHook.h>
 
@@ -47,5 +48,7 @@
 #include "Hack.h"
 
 #include "Memory.h"
+
+#include "Debug.h"
 
 #endif //PCH_H

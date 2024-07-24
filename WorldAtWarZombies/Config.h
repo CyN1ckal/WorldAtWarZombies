@@ -9,6 +9,7 @@ class Config {
   static bool TypeTracers;
   static int TypeNumber;
   static bool InfiniteAmmo;
+  static bool DebugVisuals;
 
   static bool Initialize();
 };

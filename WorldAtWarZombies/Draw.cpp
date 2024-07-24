@@ -197,8 +197,8 @@ bool Draw::DrawZombieCount(IDirect3DDevice9* dev) {
    is alive
 */
 bool Draw::DrawZombieTracers(IDirect3DDevice9* dev) {
-  EntityStateArray_New* EntityStateArray =
-      *(EntityStateArray_New**)(Hack::WaW_BaseAddress + 0xbe1c0);
+  EntityStateArray_New* EntityStateArray = *(
+      EntityStateArray_New**)(Hack::WaW_BaseAddress + Offsets::EntityStateArrayppOffset);
 
   for (int i = 0; i < 1024; i++) {
     if (EntityStateArray->EntityStateArray[i].eType == EntityType::Zombie &&
@@ -229,8 +229,8 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9* dev) {
    number
 */
 bool Draw::DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType) {
-  EntityStateArray_New* EntityStateArray =
-      *(EntityStateArray_New**)(Hack::WaW_BaseAddress + 0xbe1c0);
+  EntityStateArray_New* EntityStateArray = *(
+      EntityStateArray_New**)(Hack::WaW_BaseAddress + Offsets::EntityStateArrayppOffset);
 
   for (int i = 0; i < 1024; i++) {
     if (EntityStateArray->EntityStateArray[i].eType == eType) {
