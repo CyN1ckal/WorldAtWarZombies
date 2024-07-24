@@ -9,6 +9,7 @@ bool Config::Initialize() {
   TypeNumber = 6;
   InfiniteAmmo = false;
   DebugVisuals = false;
+  AimbotToggle = false;
 
   return true;
 }

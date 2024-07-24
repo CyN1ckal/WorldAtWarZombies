@@ -10,6 +10,7 @@ bool Config::TypeTracers;
 int Config::TypeNumber;
 bool Config::InfiniteAmmo;
 bool Config::DebugVisuals;
+bool Config::AimbotToggle;
 
 bool MyImGui::Initialized;
 
@@ -115,10 +116,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     MyImGui::Initialize(pDevice);
   }
 
-  // Hack::PrintRawToConsole(16, "test\n", 0);
-  // Hack::PrintErrorToConsole(9, (int)"ERROR: CyNickal\n", "");
-  // Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
-  // Hack::PrintAliveEnts();
 
   if (GetAsyncKeyState(VK_INSERT) & 1) {
     Config::MasterImgui = !Config::MasterImgui;
@@ -144,15 +141,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
   ImGui::EndFrame();
 
-  if (GetAsyncKeyState(VK_XBUTTON2)&1)
-  {
-    
-  }
-
-  AimbotDelayInt++;
-  if (AimbotDelayInt % 5 == 0)
-    Hack::AimAtClosestZombie();
-
   if (Config::DebugVisuals) {
     Debug::PrintFacingDirection();
     Debug::PrintPlayerCoordinates();
@@ -173,15 +161,18 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
     if (Config::InfiniteAmmo)
       Draw::InfiniteAmmoText(pD3DDevice);
+
+    if (Config::AimbotToggle && AimbotDelayInt % 5 == 0)
+      Hack::AimAtClosestZombie();
+
+    AimbotDelayInt++;
+
+
   }
+
 
   Draw::Watermark();
 
-  // Draw::DrawTrianglePerf(pD3DDevice, 0, 25, 30,
-  // D3DCOLOR_ARGB(255,255,255,255));
-
-  // Draw::DrawRectPerf(pD3DDevice, 0, 0, 100, 100,
-  //                    D3DCOLOR_ARGB(255, 255, 255, 255));
 
   ImGui::Render();
 

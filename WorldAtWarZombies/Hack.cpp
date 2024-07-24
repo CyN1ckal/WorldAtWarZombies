@@ -75,10 +75,10 @@ bool Hack::AimAtClosestZombie() {
   for (int i = 0; i < 1024; i++) {
     if (EntityStateArray->EntityStateArray[i].eType == EntityType::Zombie &&
         EntityStateArray->EntityStateArray[i].CurrentHealth > 0) {
-      float CurrentZombieDistance = VecDistance(Local_Player->position,
-                  EntityStateArray->EntityStateArray[i].position);
-      if (CurrentZombieDistance < ClosestZombieDistance)
-      {
+      float CurrentZombieDistance =
+          VecDistance(Local_Player->position,
+                      EntityStateArray->EntityStateArray[i].position);
+      if (CurrentZombieDistance < ClosestZombieDistance) {
         ClosestZombieDistance = CurrentZombieDistance;
         ClosestZombieNumber = i;
       }
@@ -88,10 +88,11 @@ bool Hack::AimAtClosestZombie() {
   if (ClosestZombieNumber == 0)
     return 0;
 
-  std::cout << std::format("Closest Zombie: {}, {}",ClosestZombieDistance, ClosestZombieNumber)<< std::endl;
+  std::cout << std::format("Closest Zombie: {}, {}", ClosestZombieDistance,
+                           ClosestZombieNumber)
+            << std::endl;
 
-
-    WritableAngles* Angles =
+  WritableAngles* Angles =
       (WritableAngles*)(WaW_BaseAddress + Offsets::WritableAngleOffset);
 
   CenterDifference* Difference =
@@ -107,14 +108,29 @@ bool Hack::AimAtClosestZombie() {
 
   printf("%f,%f,%f\n", PositionDelta.x, PositionDelta.y, PositionDelta.z);
 
-  if (PositionDelta.x > 0 && PositionDelta.y > 0)
+  if (PositionDelta.x > 0 && PositionDelta.y > 0) {
+    float OppAdj = PositionDelta.x / PositionDelta.y;
+    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Yaw = Angles->Yaw - Difference->Yaw + 90.0f - Degrees;
+  }
+  else if (PositionDelta.x < 0 && PositionDelta.y > 0)
   {
     float OppAdj = PositionDelta.x / PositionDelta.y;
     float Degrees = atan(OppAdj) * (180 / 3.141592653);
-    printf("%f Degrees Rotation\n", Degrees);
     Angles->Yaw = Angles->Yaw - Difference->Yaw + 90.0f - Degrees;
   }
-
+  else if (PositionDelta.x < 0 && PositionDelta.y < 0)
+  {
+    float OppAdj = PositionDelta.x / PositionDelta.y;
+    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Yaw = Angles->Yaw - Difference->Yaw - 90.0f - Degrees;
+  }
+  else if (PositionDelta.x > 0 && PositionDelta.y < 0)
+  {
+    float OppAdj = PositionDelta.x / PositionDelta.y;
+    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Yaw = Angles->Yaw - Difference->Yaw - 90.0f - Degrees;
+  }
 
   return 1;
 }

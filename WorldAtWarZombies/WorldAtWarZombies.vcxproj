@@ -163,6 +163,7 @@
     <ClInclude Include="Offsets.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Reclass.h" />
+    <ClInclude Include="Snippets.h" />
     <ClInclude Include="StartingThread.h" />
     <ClInclude Include="Vector.h" />
   </ItemGroup>

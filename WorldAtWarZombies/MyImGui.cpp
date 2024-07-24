@@ -10,6 +10,7 @@ MyImGui::ShowMyWindow()
   ImGui::Checkbox("Type Tracers", &Config::TypeTracers);
   ImGui::InputInt("Type Number", &Config::TypeNumber);
   ImGui::Checkbox("Debug Visuals", &Config::DebugVisuals);
+  ImGui::Checkbox("Aimbot Toggle", &Config::AimbotToggle);
 
   if (ImGui::Button("Toggle Infinite Ammo")) {
     Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);
