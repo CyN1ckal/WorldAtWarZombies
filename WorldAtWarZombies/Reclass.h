@@ -1,7 +1,4 @@
 #pragma once
-
-// Created with ReClass.NET 1.2 by KN4CK3R
-
 // Created with ReClass.NET 1.2 by KN4CK3R
 
 enum class EntityType : int32_t {
@@ -10,12 +7,6 @@ enum class EntityType : int32_t {
   Prop = 6,
   Zombie = 16
 };
-
-class NumZombies {
- public:
-  int32_t NumZombies;  // 0x0000
-  char pad_0004[60];   // 0x0004
-};                     // Size: 0x0040
 
 class EntityStateArrayBase {
  public:
@@ -102,3 +93,18 @@ class refdef_t {
   Vector3 viewOrg2;   // 0x0050
   int32_t time;       // 0x005C
 };                    // Size: 0x0060
+
+class WritableAngles {
+ public:
+  float Pitch;        // 0x0000
+  float Yaw;          // 0x0004
+  float Roll;         // 0x0008
+  char pad_000C[52];  // 0x000C
+};                    // Size: 0x0040
+
+class CenterDifference {
+ public:
+  float Pitch;        // 0x0000
+  float Yaw;          // 0x0004
+  char pad_0008[56];  // 0x0008
+};                    // Size: 0x0040

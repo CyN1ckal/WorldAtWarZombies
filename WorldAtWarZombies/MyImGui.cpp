@@ -14,6 +14,11 @@ MyImGui::ShowMyWindow()
     Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);
   }
 
+  if (ImGui::Button("Dev Button"))
+  {
+    Hack::ResetViewAngles();
+  }
+
   ImGui::End();
 
   return true;

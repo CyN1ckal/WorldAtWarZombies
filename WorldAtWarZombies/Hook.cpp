@@ -38,7 +38,6 @@ extern IDirect3DTexture9* Primitive;
 BeginScene_Template BeginScene_Original = nullptr;
 HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
   if (!PerfDrawInit && Hook::Initialized) {
-    printf("Generating Texture!\n");
     Draw::GenerateTexture(pD3DDevice, &Primitive,
                           D3DCOLOR_ARGB(255, 255, 255, 255));
     PerfDrawInit = true;
@@ -108,13 +107,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
                    OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
                    "Inconsolata Expanded", &Draw::pFont[2]);
     Hook::Initialized = true;
-
-    D3DVIEWPORT9 viewport = {};
-    pD3DDevice->GetViewport(&viewport);
-    PreviousWindowHeight = viewport.Height;
-    PreviousWindowWidth = viewport.Height;
-
-    Draw::DrawTriangle(pD3DDevice);
   }
 
   if (!MyImGui::Initialized) {

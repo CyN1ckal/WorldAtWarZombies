@@ -13,4 +13,6 @@ static uintptr_t ViewMatrixOffset = 0x008E870C;
 static uintptr_t EntityStateArrayOffset = 0xBE1C0;
 static uintptr_t WndProcOffset = 0x206BE0;
 static uintptr_t DecrementAmmoOffset = 0x1E619;
+static uintptr_t CenterDifferenceOffset = 0x14DD658;
+static uintptr_t WritableAngleOffset = 0x2C7D6D0;
 }  // namespace Offsets

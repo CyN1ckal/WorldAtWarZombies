@@ -50,3 +50,16 @@ bool Hack::ToggleInfiniteAmmo(bool b) {
     return 0;
   }
 }
+
+bool Hack::ResetViewAngles()
+{
+  WritableAngles* Angles =
+      (WritableAngles*)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+
+  CenterDifference* Difference =
+      (CenterDifference*)(WaW_BaseAddress + Offsets::CenterDifferenceOffset);
+
+  Angles->Pitch -= Difference->Pitch;
+  Angles->Yaw -= Difference->Yaw;
+  return 1;
+}

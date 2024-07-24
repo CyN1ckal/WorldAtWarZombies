@@ -28,6 +28,7 @@ class Hack {
   // Hack class member functions
   static int GetNumZombies();
   static bool ToggleInfiniteAmmo(bool b);
+  static bool ResetViewAngles();
 
  private:
 };
