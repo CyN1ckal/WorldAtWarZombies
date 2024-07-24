@@ -162,8 +162,10 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     if (Config::InfiniteAmmo)
       Draw::InfiniteAmmoText(pD3DDevice);
 
-    if (Config::AimbotToggle && AimbotDelayInt % 5 == 0)
+    if (GetAsyncKeyState(VK_XBUTTON2) && AimbotDelayInt % 5 == 0)
+    {
       Hack::AimAtClosestZombie();
+    }
 
     AimbotDelayInt++;
 

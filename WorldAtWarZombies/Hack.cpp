@@ -108,25 +108,21 @@ bool Hack::AimAtClosestZombie() {
 
   printf("%f,%f,%f\n", PositionDelta.x, PositionDelta.y, PositionDelta.z);
 
-  if (PositionDelta.x > 0 && PositionDelta.y > 0) {
+  if ((PositionDelta.x > 0 && PositionDelta.y > 0) ||
+      ((PositionDelta.x < 0 && PositionDelta.y > 0))) {
+    // Yaw Adjustment
     float OppAdj = PositionDelta.x / PositionDelta.y;
     float Degrees = atan(OppAdj) * (180 / 3.141592653);
     Angles->Yaw = Angles->Yaw - Difference->Yaw + 90.0f - Degrees;
-  }
-  else if (PositionDelta.x < 0 && PositionDelta.y > 0)
-  {
-    float OppAdj = PositionDelta.x / PositionDelta.y;
-    float Degrees = atan(OppAdj) * (180 / 3.141592653);
-    Angles->Yaw = Angles->Yaw - Difference->Yaw + 90.0f - Degrees;
-  }
-  else if (PositionDelta.x < 0 && PositionDelta.y < 0)
-  {
-    float OppAdj = PositionDelta.x / PositionDelta.y;
-    float Degrees = atan(OppAdj) * (180 / 3.141592653);
-    Angles->Yaw = Angles->Yaw - Difference->Yaw - 90.0f - Degrees;
-  }
-  else if (PositionDelta.x > 0 && PositionDelta.y < 0)
-  {
+
+    // Pitch Adjustment
+    // Need to find more accurate angles as the ones I am using are not correct.
+    OppAdj = PositionDelta.z / PositionDelta.x;
+    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    std::cout << Degrees << std::endl;
+    Angles->Pitch = Angles->Pitch - Difference->Pitch + Degrees;
+  } else if ((PositionDelta.x < 0 && PositionDelta.y < 0) ||
+             (PositionDelta.x > 0 && PositionDelta.y < 0)) {
     float OppAdj = PositionDelta.x / PositionDelta.y;
     float Degrees = atan(OppAdj) * (180 / 3.141592653);
     Angles->Yaw = Angles->Yaw - Difference->Yaw - 90.0f - Degrees;
