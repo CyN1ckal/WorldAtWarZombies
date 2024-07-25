@@ -48,6 +48,10 @@ HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
 
 /*
     brief: Hooked Window procedure. Needed for ImGui implementation
+
+    I have since realized that I do not need to hook WndProc with MinHook, and
+   instead I can use the WinAPI SetWindowLongPtr to redirect the WndProc to my
+   own. But since it aint broke; I aint fixing it.
 */
 WndProc_Template WndProc_Original = nullptr;
 int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
@@ -116,10 +120,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     Config::MasterImgui = !Config::MasterImgui;
   }
 
-  // Render State Capture
-  LPDIRECT3DSTATEBLOCK9 pStateBlock = NULL;
-  pD3DDevice->CreateStateBlock(D3DSBT_ALL, &pStateBlock);
-  pStateBlock->Capture();
+
 
   /*
     brief: ImGui implementation area
@@ -178,9 +179,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   */
   ImGui::Render();
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-
-  pStateBlock->Apply();   // apply old states
-  pStateBlock->Release(); // delete
 
   return EndScene_Original(pDevice);
 }

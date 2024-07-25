@@ -44,6 +44,9 @@ bool Hack::ToggleInfiniteAmmo(bool b) {
   }
 }
 
+/*
+    brief: This was an initial test of how writing to view angles in this game works
+*/
 bool Hack::ResetViewAngles() {
   WritableAngles *Angles =
       (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
@@ -57,6 +60,10 @@ bool Hack::ResetViewAngles() {
   return 1;
 }
 
+/*
+    brief: Aimbot v1; aims at center mass rather than the head. 
+    Loops through the ent state array rather than the CEnt array, so also slow.
+*/
 bool Hack::AimAtClosestZombie() {
   EntityStateArray_New *EntityStateArray =
       *(EntityStateArray_New **)(Hack::WaW_BaseAddress +
