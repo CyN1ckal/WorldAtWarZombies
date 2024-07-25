@@ -7,7 +7,7 @@ So far features include:
 - Entity Type Tracers
 - Infininte Ammo
 - Player Debug Information (Coordinates, Facing Direction)
-- Aimbot (Very bad as of right now)
+- Aimbot 
 
 I have only tested/developed this for Singleplayer. This is simply a test project for me. 
 
