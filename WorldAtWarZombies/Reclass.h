@@ -7,12 +7,6 @@ enum class EntityType : int32_t {
   Zombie = 16
 };
 
-class EntityStateArrayBase {
-public:
-  class EntityState (*EntityStateArrayPtr)[1024]; // 0x0000
-  char pad_0004[60];                              // 0x0004
-};                                                // Size: 0x0040
-
 class EntityState {
 public:
   int32_t number;         // 0x0000
@@ -116,3 +110,34 @@ public:
   float CenterDifference_Yaw;   // 0x0034
   char pad_0038[16];            // 0x0038
 };                              // Size: 0x0048
+
+class CEntity {
+public:
+  class EntityState *CurrentEntState; // 0x0000
+  class EntityState *NextEntState;    // 0x0004
+  char pad_0008[4];                   // 0x0008
+  int32_t CEntArrayNumber;            // 0x000C
+  int32_t EntStateArrayNumber;        // 0x0010
+  int32_t AliveFlag;                  // 0x0014
+  int32_t UnknownFlags1;              // 0x0018
+  int32_t UnknownFlags2;              // 0x001C
+  int32_t UnknownFlags3;              // 0x0020
+  char pad_0024[3272];                // 0x0024
+  Vector3 HeadPosition;               // 0x0CEC
+  char pad_0CF8[9408];                // 0x0CF8
+};                                    // Size: 0x31B8
+
+class CEntArrayBase {
+public:
+  class CEntity (*N00000ED5)[25]; // 0x0000
+};                                // Size: 0x0004
+
+class CEntBaseArray_New {
+public:
+  class CEntity CEntArray[25]; // 0x0000
+};                             // Size: 0x4DAF8
+
+class N00001511 {
+public:
+  char pad_0000[4]; // 0x0000
+};                  // Size: 0x0004

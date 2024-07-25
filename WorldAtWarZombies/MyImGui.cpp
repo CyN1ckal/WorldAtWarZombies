@@ -18,7 +18,7 @@ MyImGui::ShowMyWindow()
 
   if (ImGui::Button("Dev Button"))
   {
-    Hack::ResetViewAngles();
+    Hack::AimAtClosestZombieHead();
   }
 
   ImGui::End();

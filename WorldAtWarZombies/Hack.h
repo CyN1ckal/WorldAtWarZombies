@@ -30,6 +30,7 @@ class Hack {
   static bool ToggleInfiniteAmmo(bool b);
   static bool ResetViewAngles();
   static bool AimAtClosestZombie();
+  static bool AimAtClosestZombieHead();
 
  private:
 };

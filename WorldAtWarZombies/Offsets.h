@@ -17,4 +17,5 @@ static uintptr_t CenterDifferenceOffset = 0x4E86C0;
 static uintptr_t WritableAngleOffset = 0x2C7D6D0;
 static uintptr_t EntityStateArrayppOffset = 0xBE1C0;
 static uintptr_t CameraClasspOffset = 0x22EC;
+static uintptr_t CEntArraypOffset = 0x14F5DA4;
 }  // namespace Offsets

@@ -119,7 +119,85 @@ bool Hack::AimAtClosestZombie() {
 
     // Pitch Adjustment
     float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
-                          (PositionDelta.y * PositionDelta.y));
+                             (PositionDelta.y * PositionDelta.y));
+
+    OppAdj = PositionDelta.z / XY_Distance;
+    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
+
+  } else if ((PositionDelta.x < 0 && PositionDelta.y < 0) ||
+             (PositionDelta.x > 0 && PositionDelta.y < 0)) {
+    float OppAdj = PositionDelta.x / PositionDelta.y;
+    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw - 90.0f - Degrees;
+
+    // Pitch Adjustment
+    float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
+                             (PositionDelta.y * PositionDelta.y));
+
+    OppAdj = PositionDelta.z / XY_Distance;
+    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
+  }
+
+  return 1;
+}
+
+bool Hack::AimAtClosestZombieHead() {
+
+  EntityStateArray_New *EntityStateArray =
+      *(EntityStateArray_New **)(Hack::WaW_BaseAddress +
+                                 Offsets::EntityStateArrayppOffset);
+
+  CEntBaseArray_New *CEntArray = *(
+      CEntBaseArray_New **)(Hack::WaW_BaseAddress + Offsets::CEntArraypOffset);
+
+  float ClosestZombieDistance = 100000.0f;
+  int ClosestZombieNumber = -1;
+  int ClosestZombieEntStateArray = -1;
+
+  for (int i = 0; i < 25; i++) {
+    if (CEntArray->CEntArray[i].AliveFlag == 1) {
+      if (EntityStateArray
+              ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
+              .CurrentHealth > 0) {
+        float CurrentZombieDistance = VecDistance(
+            Local_Player->position, CEntArray->CEntArray[i].HeadPosition);
+        if (CurrentZombieDistance < ClosestZombieDistance) {
+          ClosestZombieDistance = CurrentZombieDistance;
+          ClosestZombieNumber = i;
+        }
+      }
+    }
+  }
+
+  if (ClosestZombieNumber == -1)
+    return 0;
+
+  WritableAngles *Angles =
+      (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+
+  Camera_Class *Cam =
+      *(Camera_Class **)(WaW_BaseAddress + Offsets::CameraClasspOffset);
+
+  Vector3 TargetPos = CEntArray->CEntArray[ClosestZombieNumber].HeadPosition;
+
+  Vector3 LocalPos = Cam->Origin;
+
+  Vector3 PositionDelta = {TargetPos.x - LocalPos.x, TargetPos.y - LocalPos.y,
+                           TargetPos.z - LocalPos.z};
+
+
+  if ((PositionDelta.x > 0 && PositionDelta.y > 0) ||
+      ((PositionDelta.x < 0 && PositionDelta.y > 0))) {
+    // Yaw Adjustment
+    float OppAdj = PositionDelta.x / PositionDelta.y;
+    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw + 90.0f - Degrees;
+
+    // Pitch Adjustment
+    float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
+                             (PositionDelta.y * PositionDelta.y));
 
     OppAdj = PositionDelta.z / XY_Distance;
     Degrees = atan(OppAdj) * (180 / 3.141592653);
