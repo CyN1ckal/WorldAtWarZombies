@@ -1,4 +1,5 @@
 #include "pch.h"
+
 IDirect3DTexture9 *Primitive = NULL;
 bool PerfDrawInit = false;
 /*
@@ -183,21 +184,55 @@ bool Draw::DrawZombieCount(IDirect3DDevice9 *dev) {
         brief: Draws tracers from the bottom of the screen to every zombie which
    is alive
 */
-bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev) {
+bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev, DrawTracerType TracerType) {
 
   for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
     Vector2 ScreenCoordinates;
-    if (!Draw::WorldToScreen(Hack::AliveZombieVector[i].HeadPosition,
-                             ScreenCoordinates, Hack::pViewMatrix,
-                             Hack::RefDef->Width, Hack::RefDef->Height))
-      continue;
-
     Vector2 CenterScreen = {Hack::RefDef->Width / 2, Hack::RefDef->Height / 2};
 
-    Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
-                       ScreenCoordinates.x, ScreenCoordinates.y,
-                       D3DCOLOR_ARGB(255, 255, 255, 255));
+    switch (TracerType) {
+    case DrawTracerType::Head:
+      if (!Draw::WorldToScreen(Hack::AliveZombieVector[i].HeadPosition,
+                               ScreenCoordinates, Hack::pViewMatrix,
+                               Hack::RefDef->Width, Hack::RefDef->Height))
+        continue;
+
+      Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
+                         ScreenCoordinates.x, ScreenCoordinates.y,
+                         D3DCOLOR_ARGB(255, 255, 255, 255));
+      break;
+    case DrawTracerType::CenterMass:
+      Vector3 CenterMass =
+          Hack::EntityStateArray
+              ->EntityStateArray[Hack::AliveZombieVector[i].EntStateArrayNumber]
+              .position;
+      CenterMass.z += 30.0f;
+      if (!Draw::WorldToScreen(CenterMass, ScreenCoordinates, Hack::pViewMatrix,
+                               Hack::RefDef->Width, Hack::RefDef->Height))
+        continue;
+
+      Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
+                         ScreenCoordinates.x, ScreenCoordinates.y,
+                         D3DCOLOR_ARGB(255, 255, 255, 255));
+      break;
+    case DrawTracerType::Origin:
+      if (!Draw::WorldToScreen(Hack::EntityStateArray
+                                   ->EntityStateArray[Hack::AliveZombieVector[i]
+                                                          .EntStateArrayNumber]
+                                   .position,
+                               ScreenCoordinates, Hack::pViewMatrix,
+                               Hack::RefDef->Width, Hack::RefDef->Height))
+        continue;
+
+      Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
+                         ScreenCoordinates.x, ScreenCoordinates.y,
+                         D3DCOLOR_ARGB(255, 255, 255, 255));
+      break;
+    default:
+      return 0;
+    }
   }
+
   return 1;
 }
 

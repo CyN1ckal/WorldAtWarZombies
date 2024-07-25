@@ -151,7 +151,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
       Draw::VerticalLineESP(pD3DDevice);
 
     if (Config::TracerLines)
-      Draw::DrawZombieTracers(pD3DDevice);
+      Draw::DrawZombieTracers(pD3DDevice,DrawTracerType::Origin);
 
     if (Config::TypeTracers)
       Draw::DrawTypeTracers(pD3DDevice, (EntityType)Config::TypeNumber);

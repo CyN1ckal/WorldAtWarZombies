@@ -1,5 +1,7 @@
 #pragma once
 
+enum DrawTracerType { Origin = 0, Head, CenterMass };
+
 /*
         brief: The Draw class includes variables and functions related to
    drawing with DirectX.
@@ -17,13 +19,13 @@ class Draw {
                        bool antialias, D3DCOLOR color, IDirect3DDevice9* dev);
   static bool DrawHealthBar(IDirect3DDevice9* dev);
   static bool DrawZombieCount(IDirect3DDevice9* dev);
-  static bool DrawZombieTracers(IDirect3DDevice9* dev);
+  static bool DrawZombieTracers(IDirect3DDevice9 *dev,DrawTracerType TracerType);
   static bool DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType);
   static bool VerticalLineESP(IDirect3DDevice9 *pD3DDevice);
 
   static bool CreateFonts(IDirect3DDevice9 *pD3DDevice);
 
-  // This is an array of fonts which can grow as necessary. Just 1 for now.
+  // This is an array of fonts which can grow as necessary. 
   static ID3DXFont* pFont[3];
 
   // This is for my attempt at DrawTriangle
