@@ -16,24 +16,24 @@ bool MyImGui::Initialized;
 
 bool Hook::Initialized;
 HWND Hook::window;
-void* Hook::d3d9Device[119];
-void* Hook::EndSceneFunction;
-void* Hook::ResetFunction;
-void* Hook::SetStreamSourceFunction;
-void* Hook::BeginSceneFunction;
-void* Hook::PrintToConsoleFunction;
-void* Hook::PrintRawToConsoleFunction;
-void* Hook::PrintToScreen_MaybeFunction;
-void* Hook::WndProcFunction;
-IDirect3DDevice9* Hook::pD3DDevice;
+void *Hook::d3d9Device[119];
+void *Hook::EndSceneFunction;
+void *Hook::ResetFunction;
+void *Hook::SetStreamSourceFunction;
+void *Hook::BeginSceneFunction;
+void *Hook::PrintToConsoleFunction;
+void *Hook::PrintRawToConsoleFunction;
+void *Hook::PrintToScreen_MaybeFunction;
+void *Hook::WndProcFunction;
+IDirect3DDevice9 *Hook::pD3DDevice;
 int Hook::windowHeight, Hook::windowWidth;
 int Hook::PreviousWindowHeight;
 int Hook::PreviousWindowWidth;
 
-ID3DXFont* Draw::pFont[3];
+ID3DXFont *Draw::pFont[3];
 
 extern bool PerfDrawInit;
-extern IDirect3DTexture9* Primitive;
+extern IDirect3DTexture9 *Primitive;
 /*
     brief: BeginScene hook needed for getting texture
 */
@@ -51,9 +51,7 @@ HRESULT __stdcall Hook::BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev) {
     brief: Hooked Window procedure. Needed for ImGui implementation
 */
 WndProc_Template WndProc_Original = nullptr;
-int __stdcall Hook::WndProc_Hooked(HWND hWnd,
-                                   UINT Msg,
-                                   int wParam,
+int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
                                    LPARAM lParam) {
   extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
       HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -74,7 +72,7 @@ int __stdcall Hook::WndProc_Hooked(HWND hWnd,
    already formatted. This is the "raw" string.
 */
 PrintRawToConsole_Template PrintRawToConsole_Original = nullptr;
-void __cdecl Hook::PrintRawToConsole_Hooked(int a1, const char* a2, int a3) {
+void __cdecl Hook::PrintRawToConsole_Hooked(int a1, const char *a2, int a3) {
   // printf("a1: %d,a2: %s,a3: %d\n", a1,a2,a3);
   PrintRawToConsole_Original(a1, a2, a3);
 }
@@ -86,8 +84,7 @@ void __cdecl Hook::PrintRawToConsole_Hooked(int a1, const char* a2, int a3) {
 */
 PrintToConsole_Template PrintToConsole_Original = nullptr;
 void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe,
-                                          int StringToPrint,
-                                          ...) {
+                                          int StringToPrint, ...) {
   PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
 }
 
@@ -115,7 +112,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   if (!MyImGui::Initialized) {
     MyImGui::Initialize(pDevice);
   }
-
 
   if (GetAsyncKeyState(VK_INSERT) & 1) {
     Config::MasterImgui = !Config::MasterImgui;
@@ -162,26 +158,21 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     if (Config::InfiniteAmmo)
       Draw::InfiniteAmmoText(pD3DDevice);
 
-    if (GetAsyncKeyState(VK_XBUTTON2) && AimbotDelayInt % 5 == 0)
-    {
+    if (GetAsyncKeyState(VK_XBUTTON2) && AimbotDelayInt % 2 == 0) {
       Hack::AimAtClosestZombie();
     }
 
     AimbotDelayInt++;
-
-
   }
 
-
   Draw::Watermark();
-
 
   ImGui::Render();
 
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-  pStateBlock->Apply();    // apply old states
-  pStateBlock->Release();  // delete
+  pStateBlock->Apply();   // apply old states
+  pStateBlock->Release(); // delete
 
   return EndScene_Original(pDevice);
 }
@@ -192,7 +183,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
    because COD dosent let you, it is basically useless.
 */
 Reset_Template Reset_Original = nullptr;
-HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters) {
+HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS *pPresentationParameters) {
   printf("Reset Called!\n");
   return Reset_Original(pPresentationParameters);
 }
@@ -202,11 +193,9 @@ HRESULT Hook::Reset_Hook(D3DPRESENT_PARAMETERS* pPresentationParameters) {
    the game is passing. Not really being used right now.
 */
 SetStreamSource_Template GetStreamSource_Original = nullptr;
-HRESULT APIENTRY
-Hook::GetStreamSource_Hook(UINT StreamNumber,
-                           IDirect3DVertexBuffer9** ppStreamData,
-                           UINT* pOffsetInBytes,
-                           UINT* pStride) {
+HRESULT APIENTRY Hook::GetStreamSource_Hook(
+    UINT StreamNumber, IDirect3DVertexBuffer9 **ppStreamData,
+    UINT *pOffsetInBytes, UINT *pStride) {
   return GetStreamSource_Original(StreamNumber, ppStreamData, pOffsetInBytes,
                                   pStride);
 }
@@ -215,17 +204,17 @@ Hook::GetStreamSource_Hook(UINT StreamNumber,
         brief: Enabling hooks which arent DirectX
 */
 void Hook::EnableMiscHooks() {
-  PrintToConsoleFunction = (void*)Offsets::PrintToConsoleOffset;
+  PrintToConsoleFunction = (void *)Offsets::PrintToConsoleOffset;
   MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked,
-                reinterpret_cast<LPVOID*>(&PrintToConsole_Original));
+                reinterpret_cast<LPVOID *>(&PrintToConsole_Original));
   MH_EnableHook(PrintToConsoleFunction);
-  PrintRawToConsoleFunction = (void*)Offsets::PrintRawToConsoleOffset;
+  PrintRawToConsoleFunction = (void *)Offsets::PrintRawToConsoleOffset;
   MH_CreateHook(PrintRawToConsoleFunction, &PrintRawToConsole_Hooked,
-                reinterpret_cast<LPVOID*>(&PrintRawToConsole_Original));
+                reinterpret_cast<LPVOID *>(&PrintRawToConsole_Original));
   MH_EnableHook(PrintRawToConsoleFunction);
-  WndProcFunction = (void*)(Hack::WaW_BaseAddress + Offsets::WndProcOffset);
+  WndProcFunction = (void *)(Hack::WaW_BaseAddress + Offsets::WndProcOffset);
   MH_CreateHook(WndProcFunction, &WndProc_Hooked,
-                reinterpret_cast<LPVOID*>(&WndProc_Original));
+                reinterpret_cast<LPVOID *>(&WndProc_Original));
   MH_EnableHook(WndProcFunction);
 }
 
@@ -242,7 +231,7 @@ bool Hook::Hook_DirectX() {
   printf("End Scene Address: %X\n", (uintptr_t)EndSceneFunction);
 
   if (MH_CreateHook(EndSceneFunction, &EndScene_Hook,
-                    reinterpret_cast<LPVOID*>(&EndScene_Original)) != MH_OK) {
+                    reinterpret_cast<LPVOID *>(&EndScene_Original)) != MH_OK) {
     printf("Error Creating EndSceneFunction Hook! Exiting.\n");
     Unhook_DirectX();
     return 0;
@@ -259,7 +248,7 @@ bool Hook::Hook_DirectX() {
   printf("Reset Address: %X\n", (uintptr_t)ResetFunction);
 
   if (MH_CreateHook(ResetFunction, &Reset_Hook,
-                    reinterpret_cast<LPVOID*>(&Reset_Original)) != MH_OK) {
+                    reinterpret_cast<LPVOID *>(&Reset_Original)) != MH_OK) {
     printf("Error Creating ResetFunction Hook! Exiting.\n");
     Unhook_DirectX();
     return 0;
@@ -277,7 +266,7 @@ bool Hook::Hook_DirectX() {
          (uintptr_t)SetStreamSourceFunction);
 
   if (MH_CreateHook(SetStreamSourceFunction, &GetStreamSource_Hook,
-                    reinterpret_cast<LPVOID*>(&GetStreamSource_Original)) !=
+                    reinterpret_cast<LPVOID *>(&GetStreamSource_Original)) !=
       MH_OK) {
     printf("Error Creating SetStreamSourceFunction Hook! Exiting.\n");
     Unhook_DirectX();
@@ -295,7 +284,8 @@ bool Hook::Hook_DirectX() {
   printf("BeginSceneFunction Address: %X\n", (uintptr_t)BeginSceneFunction);
 
   if (MH_CreateHook(BeginSceneFunction, &BeginScene_Hooked,
-                    reinterpret_cast<LPVOID*>(&BeginScene_Original)) != MH_OK) {
+                    reinterpret_cast<LPVOID *>(&BeginScene_Original)) !=
+      MH_OK) {
     printf("Error Creating BeginSceneFunction Hook! Exiting.\n");
     Unhook_DirectX();
     return 0;
@@ -363,15 +353,15 @@ HWND Hook::GetProcessWindow() {
 /*
         brief: Getting D3D9Device using a dummy device
 */
-BOOL Hook::GetD3D9Device(void** pTable, const size_t size) {
+BOOL Hook::GetD3D9Device(void **pTable, const size_t size) {
   if (!pTable)
     return FALSE;
 
-  IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+  IDirect3D9 *pD3D = Direct3DCreate9(D3D_SDK_VERSION);
   if (!pD3D)
     return FALSE;
 
-  IDirect3DDevice9* pDummyDevice = nullptr;
+  IDirect3DDevice9 *pDummyDevice = nullptr;
 
   D3DPRESENT_PARAMETERS d3dpp = {};
   d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -395,7 +385,7 @@ BOOL Hook::GetD3D9Device(void** pTable, const size_t size) {
     }
   }
 
-  memcpy(pTable, *(void***)(pDummyDevice), size);
+  memcpy(pTable, *(void ***)(pDummyDevice), size);
   pDummyDevice->Release();
   pD3D->Release();
   return TRUE;

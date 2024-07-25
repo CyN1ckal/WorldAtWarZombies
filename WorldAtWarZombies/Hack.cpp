@@ -5,9 +5,9 @@
    entity list looking for the correct Type
 */
 int Hack::GetNumZombies() {
-  EntityStateArray_New* EntityStateArray =
-      *(EntityStateArray_New**)(Hack::WaW_BaseAddress +
-                                Offsets::EntityStateArrayOffset);
+  EntityStateArray_New *EntityStateArray =
+      *(EntityStateArray_New **)(Hack::WaW_BaseAddress +
+                                 Offsets::EntityStateArrayOffset);
 
   int ZombieCount = 0;
 
@@ -31,10 +31,10 @@ bool Hack::ToggleInfiniteAmmo(bool b) {
 
   if (b == true) {
     DWORD protection;
-    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
                      PAGE_READWRITE, &protection);
-    memset((void*)DecrementAmmoFunction, 0x90, 7);
-    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+    memset((void *)DecrementAmmoFunction, 0x90, 7);
+    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
                      protection, nullptr);
     Config::InfiniteAmmo = true;
     return 1;
@@ -42,10 +42,10 @@ bool Hack::ToggleInfiniteAmmo(bool b) {
   } else {
     DWORD protection;
     BYTE OriginalBytes[] = {0x89, 0x84, 0x8F, 0xFC, 0x05, 0x00, 0x00};
-    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
                      PAGE_READWRITE, &protection);
-    memcpy((void*)DecrementAmmoFunction, &OriginalBytes, 7);
-    VirtualProtectEx(GetCurrentProcess(), (void*)DecrementAmmoFunction, 7,
+    memcpy((void *)DecrementAmmoFunction, &OriginalBytes, 7);
+    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
                      protection, nullptr);
     Config::InfiniteAmmo = false;
     return 0;
@@ -53,11 +53,11 @@ bool Hack::ToggleInfiniteAmmo(bool b) {
 }
 
 bool Hack::ResetViewAngles() {
-  WritableAngles* Angles =
-      (WritableAngles*)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+  WritableAngles *Angles =
+      (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
 
-  CenterDifference* Difference =
-      (CenterDifference*)(WaW_BaseAddress + Offsets::CenterDifferenceOffset);
+  CenterDifference *Difference =
+      (CenterDifference *)(WaW_BaseAddress + Offsets::CenterDifferenceOffset);
 
   Angles->Pitch -= Difference->Pitch;
   Angles->Yaw -= Difference->Yaw;
@@ -65,9 +65,9 @@ bool Hack::ResetViewAngles() {
 }
 
 bool Hack::AimAtClosestZombie() {
-  EntityStateArray_New* EntityStateArray =
-      *(EntityStateArray_New**)(Hack::WaW_BaseAddress +
-                                Offsets::EntityStateArrayppOffset);
+  EntityStateArray_New *EntityStateArray =
+      *(EntityStateArray_New **)(Hack::WaW_BaseAddress +
+                                 Offsets::EntityStateArrayppOffset);
 
   float ClosestZombieDistance = 100000.0f;
   int ClosestZombieNumber = 0;
@@ -88,44 +88,56 @@ bool Hack::AimAtClosestZombie() {
   if (ClosestZombieNumber == 0)
     return 0;
 
-  std::cout << std::format("Closest Zombie: {}, {}", ClosestZombieDistance,
-                           ClosestZombieNumber)
-            << std::endl;
+  // std::cout << std::format("Closest Zombie: {}, {}", ClosestZombieDistance,
+  //                          ClosestZombieNumber)
+  //           << std::endl;
 
-  WritableAngles* Angles =
-      (WritableAngles*)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+  WritableAngles *Angles =
+      (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
 
-  CenterDifference* Difference =
-      (CenterDifference*)(WaW_BaseAddress + Offsets::CenterDifferenceOffset);
+  Camera_Class *Cam =
+      *(Camera_Class **)(WaW_BaseAddress + Offsets::CameraClasspOffset);
 
   Vector3 TargetPos =
       EntityStateArray->EntityStateArray[ClosestZombieNumber].position;
 
-  Vector3 LocalPos = Local_Player->position;
+  TargetPos.z += 45.0f;
+
+  Vector3 LocalPos = Cam->Origin;
 
   Vector3 PositionDelta = {TargetPos.x - LocalPos.x, TargetPos.y - LocalPos.y,
                            TargetPos.z - LocalPos.z};
 
-  printf("%f,%f,%f\n", PositionDelta.x, PositionDelta.y, PositionDelta.z);
+  // printf("%f,%f,%f\n", PositionDelta.x, PositionDelta.y, PositionDelta.z);
 
   if ((PositionDelta.x > 0 && PositionDelta.y > 0) ||
       ((PositionDelta.x < 0 && PositionDelta.y > 0))) {
     // Yaw Adjustment
     float OppAdj = PositionDelta.x / PositionDelta.y;
     float Degrees = atan(OppAdj) * (180 / 3.141592653);
-    Angles->Yaw = Angles->Yaw - Difference->Yaw + 90.0f - Degrees;
+    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw + 90.0f - Degrees;
 
     // Pitch Adjustment
-    // Need to find more accurate angles as the ones I am using are not correct.
-    OppAdj = PositionDelta.z / PositionDelta.x;
+    float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
+                          (PositionDelta.y * PositionDelta.y));
+
+    OppAdj = PositionDelta.z / XY_Distance;
     Degrees = atan(OppAdj) * (180 / 3.141592653);
-    std::cout << Degrees << std::endl;
-    Angles->Pitch = Angles->Pitch - Difference->Pitch + Degrees;
+    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
+
   } else if ((PositionDelta.x < 0 && PositionDelta.y < 0) ||
              (PositionDelta.x > 0 && PositionDelta.y < 0)) {
     float OppAdj = PositionDelta.x / PositionDelta.y;
     float Degrees = atan(OppAdj) * (180 / 3.141592653);
-    Angles->Yaw = Angles->Yaw - Difference->Yaw - 90.0f - Degrees;
+    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw - 90.0f - Degrees;
+
+    // Pitch Adjustment
+    float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
+                             (PositionDelta.y * PositionDelta.y));
+
+    OppAdj = PositionDelta.z / XY_Distance;
+    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
   }
 
   return 1;
