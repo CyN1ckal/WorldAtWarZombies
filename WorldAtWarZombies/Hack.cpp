@@ -1,33 +1,6 @@
 #include "pch.h"
 
-/*
-        brief: Gets the number of zombies remaining by looping through the
-   entity list looking for the correct Type
-*/
-int Hack::GetNumZombies() {
-  CEntBaseArray_New *CEntArray =
-      *(CEntBaseArray_New **)(WaW_BaseAddress + Offsets::CEntArraypOffset);
-
-  EntityStateArray_New *EntStateArray =
-      *(EntityStateArray_New **)(WaW_BaseAddress +
-                                 Offsets::EntityStateArrayppOffset);
-
-  int AliveZombies = 0;
-
-  for (int i = 0; i < MAX_CENTS; i++) {
-    if (CEntArray->CEntArray[i].NextEntState == nullptr)
-      continue;
-
-    if (EntStateArray
-            ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
-            .CurrentHealth < 1)
-      continue;
-
-    AliveZombies++;
-  }
-
-  return AliveZombies;
-}
+std::vector<CEntity> Hack::AliveZombieVector;
 
 /*
     brief: Turns on the infinite ammo hack by patching the function which
@@ -163,88 +136,105 @@ bool Hack::AimAtClosestZombie() {
   return 1;
 }
 
+/*
+    brief: Aims at the closest alive zombie (head) in the AliveZombieVector
+*/
 bool Hack::AimAtClosestZombieHead() {
-
-  EntityStateArray_New *EntityStateArray =
-      *(EntityStateArray_New **)(Hack::WaW_BaseAddress +
-                                 Offsets::EntityStateArrayppOffset);
-
-  CEntBaseArray_New *CEntArray = *(
-      CEntBaseArray_New **)(Hack::WaW_BaseAddress + Offsets::CEntArraypOffset);
 
   float ClosestZombieDistance = 100000.0f;
   int ClosestZombieNumber = -1;
-  int ClosestZombieEntStateArray = -1;
 
-  for (int i = 0; i < MAX_CENTS; i++) {
-
-    if (CEntArray->CEntArray[i].NextEntState == nullptr)
-      continue;
-    if (EntityStateArray
-            ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
-            .CurrentHealth < 1)
-      continue;
-
+  for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
     float CurrentZombieDistance = VecDistance(
-        Local_Player->position, CEntArray->CEntArray[i].HeadPosition);
+        Hack::LocalPlayerCamera->Origin, Hack::AliveZombieVector[i].HeadPosition);
 
     if (CurrentZombieDistance < ClosestZombieDistance) {
       ClosestZombieDistance = CurrentZombieDistance;
       ClosestZombieNumber = i;
     }
   }
-
   if (ClosestZombieNumber == -1)
     return 0;
 
-  WritableAngles *Angles =
-      (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+  Vector3 TargetPos = Hack::AliveZombieVector[ClosestZombieNumber].HeadPosition;
 
-  Camera_Class *Cam =
-      *(Camera_Class **)(WaW_BaseAddress + Offsets::CameraClasspOffset);
-
-  Vector3 TargetPos = CEntArray->CEntArray[ClosestZombieNumber].HeadPosition;
-
-  Vector3 LocalPos = Cam->Origin;
+  Vector3 LocalPos = Hack::LocalPlayerCamera->Origin;
 
   Vector3 PositionDelta = {TargetPos.x - LocalPos.x, TargetPos.y - LocalPos.y,
                            TargetPos.z - LocalPos.z};
 
-  if ((PositionDelta.x > 0 && PositionDelta.y > 0) ||
-      ((PositionDelta.x < 0 && PositionDelta.y > 0))) {
+  /*
+    First, handle angles which are positive Y
+  */
+  if (PositionDelta.y > 0) {
     // Yaw Calculation
     float OppAdj = PositionDelta.x / PositionDelta.y;
-    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    float Degrees = atan(OppAdj) * (180 / PI);
 
     // Setting Yaw
-    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw + 90.0f - Degrees;
+    LocalPlayerWritableAngles->Yaw =
+        LocalPlayerWritableAngles->Yaw -
+        Hack::LocalPlayerCamera->CenterDifference_Yaw + 90.0f - Degrees;
 
     // Pitch Calculation
     float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
                              (PositionDelta.y * PositionDelta.y));
     OppAdj = PositionDelta.z / XY_Distance;
-    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Degrees = atan(OppAdj) * (180 / PI);
 
     // Setting Pitch
-    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
+    LocalPlayerWritableAngles->Pitch =
+        LocalPlayerWritableAngles->Pitch -
+        Hack::LocalPlayerCamera->CenterDifference_Pitch - Degrees;
 
-  } else if ((PositionDelta.x < 0 && PositionDelta.y < 0) ||
-             (PositionDelta.x > 0 && PositionDelta.y < 0)) {
+  }
+  /*
+    Next, handle angles which are negative Y
+  */
+  else if (PositionDelta.y < 0) {
     // Yaw Calculations
     float OppAdj = PositionDelta.x / PositionDelta.y;
-    float Degrees = atan(OppAdj) * (180 / 3.141592653);
+    float Degrees = atan(OppAdj) * (180 / PI);
 
     // Setting Yaw
-    Angles->Yaw = Angles->Yaw - Cam->CenterDifference_Yaw - 90.0f - Degrees;
+    LocalPlayerWritableAngles->Yaw =
+        LocalPlayerWritableAngles->Yaw -
+        Hack::LocalPlayerCamera->CenterDifference_Yaw - 90.0f - Degrees;
 
     // Pitch Calculations
     float XY_Distance = sqrt((PositionDelta.x * PositionDelta.x) +
                              (PositionDelta.y * PositionDelta.y));
     OppAdj = PositionDelta.z / XY_Distance;
-    Degrees = atan(OppAdj) * (180 / 3.141592653);
+    Degrees = atan(OppAdj) * (180 / PI);
 
     // Setting Pitch
-    Angles->Pitch = Angles->Pitch - Cam->CenterDifference_Pitch - Degrees;
+    LocalPlayerWritableAngles->Pitch =
+        LocalPlayerWritableAngles->Pitch -
+        Hack::LocalPlayerCamera->CenterDifference_Pitch - Degrees;
+  }
+
+  return 1;
+}
+
+/*
+    brief: Updates the ZombieVector in the Hack class
+*/
+bool Hack::FillZombieVector() {
+  Hack::AliveZombieVector.clear();
+
+  CEntBaseArray_New *CEntArray = *(
+      CEntBaseArray_New **)(Hack::WaW_BaseAddress + Offsets::CEntArraypOffset);
+
+  for (int i = 0; i < MAX_CENTS; i++) {
+
+    if (CEntArray->CEntArray[i].NextEntState == nullptr)
+      continue;
+    if (Hack::EntityStateArray
+            ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
+            .CurrentHealth < 1)
+      continue;
+
+    Hack::AliveZombieVector.push_back(CEntArray->CEntArray[i]);
   }
 
   return 1;

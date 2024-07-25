@@ -20,6 +20,8 @@ class Draw {
   static bool DrawZombieTracers(IDirect3DDevice9* dev);
   static bool DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType);
 
+  static bool CreateFonts(IDirect3DDevice9 *pD3DDevice);
+
   // This is an array of fonts which can grow as necessary. Just 1 for now.
   static ID3DXFont* pFont[3];
 
@@ -31,7 +33,7 @@ class Draw {
   static void DrawRectPerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
                            float w, float h, D3DCOLOR Color);
   static void DrawLinePerf(IDirect3DDevice9* m_pD3Ddev, float X, float Y,
-                           float X2, float Y2, float Width, D3DCOLOR Color);
+                           float X2, float Y2, D3DCOLOR Color);
   static void DrawTrianglePerf(IDirect3DDevice9* m_pD3Ddev, float x, float y,
                                float z, D3DCOLOR Color);
 

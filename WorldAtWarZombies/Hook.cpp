@@ -88,24 +88,16 @@ void APIENTRY Hook::PrintToConsole_Hooked(int OutputBuffer_Maybe,
   PrintToConsole_Original(OutputBuffer_Maybe, StringToPrint);
 }
 
-int AimbotDelayInt = 0;
 /*
         brief: The main EndScene hook. This is the hook which is called every
    frame, so this is where I do the hack logic as well.
 */
+int AimbotDelayInt = 0;
 EndScene_Template EndScene_Original = nullptr;
 HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   if (!Hook::Initialized) {
     pD3DDevice = pDevice;
-    D3DXCreateFont(pD3DDevice, 24, 8, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
-                   OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
-                   "Consolas", &Draw::pFont[0]);
-    D3DXCreateFont(pD3DDevice, 24, 10, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
-                   OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
-                   "Roboto", &Draw::pFont[1]);
-    D3DXCreateFont(pD3DDevice, 24, 10, FW_NORMAL, 0, 0, DEFAULT_CHARSET,
-                   OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH,
-                   "Inconsolata Expanded", &Draw::pFont[2]);
+    Draw::CreateFonts(pD3DDevice);
     Hook::Initialized = true;
   }
 
@@ -122,13 +114,14 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   pD3DDevice->CreateStateBlock(D3DSBT_ALL, &pStateBlock);
   pStateBlock->Capture();
 
-  // ImGui Implementation
+  /*
+    brief: ImGui implementation area
+  */
   ImGui_ImplDX9_NewFrame();
   ImGui_ImplWin32_NewFrame();
 
   ImGui::NewFrame();
 
-  // My ImGui Windows
   if (Config::MasterImgui) {
     ImGui::ShowDemoWindow();
 
@@ -136,6 +129,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   }
 
   ImGui::EndFrame();
+  /*
+    End of ImGui implementation area
+  */
 
   if (Config::DebugVisuals) {
     Debug::PrintFacingDirection();
@@ -143,6 +139,8 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   }
 
   if (Hack::Local_Player->Time) {
+    Hack::FillZombieVector();
+
     if (Config::TracerLines)
       Draw::DrawZombieTracers(pD3DDevice);
 
@@ -159,17 +157,18 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
       Draw::InfiniteAmmoText(pD3DDevice);
 
     if (GetAsyncKeyState(VK_XBUTTON2) && AimbotDelayInt % 2 == 0) {
-      //Hack::AimAtClosestZombie();
       Hack::AimAtClosestZombieHead();
     }
-
     AimbotDelayInt++;
   }
 
   Draw::Watermark();
 
+  /*
+    Render ImGui here instead of directly after the end of the implementation
+    area so the ESP draws under the menu
+  */
   ImGui::Render();
-
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
   pStateBlock->Apply();   // apply old states
