@@ -10,7 +10,7 @@ class Config {
   static int TypeNumber;
   static bool InfiniteAmmo;
   static bool DebugVisuals;
-  static bool AimbotToggle;
+  static bool VerticalLineESP;
 
   static bool Initialize();
 };

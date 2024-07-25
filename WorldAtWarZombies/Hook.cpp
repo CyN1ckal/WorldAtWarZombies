@@ -10,7 +10,6 @@ bool Config::TypeTracers;
 int Config::TypeNumber;
 bool Config::InfiniteAmmo;
 bool Config::DebugVisuals;
-bool Config::AimbotToggle;
 
 bool MyImGui::Initialized;
 
@@ -55,8 +54,16 @@ int __stdcall Hook::WndProc_Hooked(HWND hWnd, UINT Msg, int wParam,
                                    LPARAM lParam) {
   extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(
       HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-  if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam))
+
+  if (ImGui_ImplWin32_WndProcHandler(hWnd, Msg, wParam, lParam)) {
+    ImGui::GetIO().MouseDrawCursor =
+        ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     return true;
+  }
+
+  if (MyImGui::Initialized)
+    ImGui::GetIO().MouseDrawCursor =
+        ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
 
   if (ImGui::GetIO().WantCaptureMouse) {
     if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
@@ -123,8 +130,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
   ImGui::NewFrame();
 
   if (Config::MasterImgui) {
-    ImGui::ShowDemoWindow();
-
     MyImGui::ShowMyWindow();
   }
 
@@ -140,6 +145,9 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
   if (Hack::Local_Player->Time) {
     Hack::FillZombieVector();
+
+    if (Config::VerticalLineESP)
+      Draw::VerticalLineESP(pD3DDevice);
 
     if (Config::TracerLines)
       Draw::DrawZombieTracers(pD3DDevice);

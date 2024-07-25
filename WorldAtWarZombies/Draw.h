@@ -19,6 +19,7 @@ class Draw {
   static bool DrawZombieCount(IDirect3DDevice9* dev);
   static bool DrawZombieTracers(IDirect3DDevice9* dev);
   static bool DrawTypeTracers(IDirect3DDevice9* dev, EntityType eType);
+  static bool VerticalLineESP(IDirect3DDevice9 *pD3DDevice);
 
   static bool CreateFonts(IDirect3DDevice9 *pD3DDevice);
 

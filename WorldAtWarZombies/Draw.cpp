@@ -360,3 +360,33 @@ bool Draw::CreateFonts(IDirect3DDevice9 *pD3DDevice) {
                  "Inconsolata Expanded", &Draw::pFont[2]);
   return 1;
 }
+
+/*
+    brief: Draw a line from each zombie's origin to their head
+*/
+bool Draw::VerticalLineESP(IDirect3DDevice9 *pD3DDevice) {
+
+  for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
+    Vector2 HeadPositionScreenCoordinates;
+    if (!Draw::WorldToScreen(Hack::AliveZombieVector[i].HeadPosition,
+                             HeadPositionScreenCoordinates, Hack::pViewMatrix,
+                             Hack::RefDef->Width, Hack::RefDef->Height))
+      continue;
+
+    Vector2 OriginPositionScreenCoordinates;
+    if (!Draw::WorldToScreen(Hack::EntityStateArray
+                                 ->EntityStateArray[Hack::AliveZombieVector[i]
+                                                        .EntStateArrayNumber]
+                                 .position,
+                             OriginPositionScreenCoordinates, Hack::pViewMatrix,
+                             Hack::RefDef->Width, Hack::RefDef->Height))
+      continue;
+
+    Draw::DrawLinePerf(
+        pD3DDevice, OriginPositionScreenCoordinates.x,
+        OriginPositionScreenCoordinates.y, HeadPositionScreenCoordinates.x,
+        HeadPositionScreenCoordinates.y, D3DCOLOR_ARGB(255, 155, 155, 155));
+  }
+
+  return 1;
+}
