@@ -184,6 +184,7 @@ bool Draw::DrawZombieCount(IDirect3DDevice9 *dev) {
         brief: Draws tracers from the bottom of the screen to every zombie which
    is alive
 */
+RGBA_Struct MyImGui::ZombieTracerColor_RGBA;
 bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev, DrawTracerType TracerType) {
 
   for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
@@ -199,7 +200,10 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev, DrawTracerType TracerType) {
 
       Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
                          ScreenCoordinates.x, ScreenCoordinates.y,
-                         D3DCOLOR_ARGB(255, 255, 255, 255));
+                         D3DCOLOR_RGBA(MyImGui::ZombieTracerColor_RGBA.r,
+                                       MyImGui::ZombieTracerColor_RGBA.g,
+                                       MyImGui::ZombieTracerColor_RGBA.b,
+                                       MyImGui::ZombieTracerColor_RGBA.a));
       break;
     case DrawTracerType::CenterMass:
       Vector3 CenterMass =
@@ -213,7 +217,10 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev, DrawTracerType TracerType) {
 
       Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
                          ScreenCoordinates.x, ScreenCoordinates.y,
-                         D3DCOLOR_ARGB(255, 255, 255, 255));
+                         D3DCOLOR_RGBA(MyImGui::ZombieTracerColor_RGBA.r,
+                                       MyImGui::ZombieTracerColor_RGBA.g,
+                                       MyImGui::ZombieTracerColor_RGBA.b,
+                                       MyImGui::ZombieTracerColor_RGBA.a));
       break;
     case DrawTracerType::Origin:
       if (!Draw::WorldToScreen(Hack::EntityStateArray
@@ -226,7 +233,10 @@ bool Draw::DrawZombieTracers(IDirect3DDevice9 *dev, DrawTracerType TracerType) {
 
       Draw::DrawLinePerf(dev, CenterScreen.x, Hack::RefDef->Height,
                          ScreenCoordinates.x, ScreenCoordinates.y,
-                         D3DCOLOR_ARGB(255, 255, 255, 255));
+                         D3DCOLOR_RGBA(MyImGui::ZombieTracerColor_RGBA.r,
+                                       MyImGui::ZombieTracerColor_RGBA.g,
+                                       MyImGui::ZombieTracerColor_RGBA.b,
+                                       MyImGui::ZombieTracerColor_RGBA.a));
       break;
     default:
       return 0;
@@ -355,10 +365,15 @@ void Draw::DrawLinePerf(IDirect3DDevice9 *m_pD3Ddev, float X, float Y, float X2,
 /*
     brief: Draw text at the top left whenever injected
 */
+RGBA_Struct MyImGui::MenuThemeColor_RGBA;
 void Draw::Watermark() {
   RECT TextLocation = {0, 0, 200, 100};
   Draw::pFont[2]->DrawTextA(NULL, "Zombies Mod", -1, &TextLocation,
-                            DT_LEFT | DT_TOP, D3DCOLOR_ARGB(255, 186, 8, 189));
+                            DT_LEFT | DT_TOP,
+                            D3DCOLOR_RGBA(MyImGui::MenuThemeColor_RGBA.r,
+                                          MyImGui::MenuThemeColor_RGBA.g,
+                                          MyImGui::MenuThemeColor_RGBA.b,
+                                          MyImGui::MenuThemeColor_RGBA.a));
 }
 
 /*
@@ -399,6 +414,7 @@ bool Draw::CreateFonts(IDirect3DDevice9 *pD3DDevice) {
 /*
     brief: Draw a line from each zombie's origin to their head
 */
+RGBA_Struct MyImGui::ZombieVerticalLineColor_RGBA;
 bool Draw::VerticalLineESP(IDirect3DDevice9 *pD3DDevice) {
 
   for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
@@ -420,7 +436,11 @@ bool Draw::VerticalLineESP(IDirect3DDevice9 *pD3DDevice) {
     Draw::DrawLinePerf(
         pD3DDevice, OriginPositionScreenCoordinates.x,
         OriginPositionScreenCoordinates.y, HeadPositionScreenCoordinates.x,
-        HeadPositionScreenCoordinates.y, D3DCOLOR_ARGB(255, 155, 155, 155));
+                       HeadPositionScreenCoordinates.y,
+                       D3DCOLOR_RGBA(MyImGui::ZombieVerticalLineColor_RGBA.r,
+                                     MyImGui::ZombieVerticalLineColor_RGBA.g,
+                                     MyImGui::ZombieVerticalLineColor_RGBA.b,
+                                     MyImGui::ZombieVerticalLineColor_RGBA.a));
   }
 
   return 1;

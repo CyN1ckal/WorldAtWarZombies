@@ -130,9 +130,12 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
   ImGui::NewFrame();
 
+
   if (Config::MasterImgui) {
+    MyImGui::UpdateColors();
     MyImGui::ShowMyWindow();
   }
+  
 
   ImGui::EndFrame();
   /*

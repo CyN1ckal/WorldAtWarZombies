@@ -9,43 +9,35 @@ std::vector<CEntity> Hack::AliveZombieVector;
 bool Hack::ToggleInfiniteAmmo(bool b) {
   uintptr_t DecrementAmmoFunction =
       WaW_BaseAddress + Offsets::DecrementAmmoOffset;
+  DWORD protection;
+
+  VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
+                   PAGE_READWRITE, &protection);
 
   if (b == true) {
 
-    DWORD protection;
-
-    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
-                     PAGE_READWRITE, &protection);
-
     memset((void *)DecrementAmmoFunction, 0x90, 7);
-
-    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
-                     protection, nullptr);
 
     Config::InfiniteAmmo = true;
 
-    return 1;
-
   } else {
-    DWORD protection;
 
     BYTE OriginalBytes[] = {0x89, 0x84, 0x8F, 0xFC, 0x05, 0x00, 0x00};
 
-    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
-                     PAGE_READWRITE, &protection);
-
     memcpy((void *)DecrementAmmoFunction, &OriginalBytes, 7);
 
-    VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
-                     protection, nullptr);
-
     Config::InfiniteAmmo = false;
-    return 0;
   }
+
+  VirtualProtectEx(GetCurrentProcess(), (void *)DecrementAmmoFunction, 7,
+                   protection, nullptr);
+
+  return 1;
 }
 
 /*
-    brief: This was an initial test of how writing to view angles in this game works
+    brief: This was an initial test of how writing to view angles in this game
+   works
 */
 bool Hack::ResetViewAngles() {
   WritableAngles *Angles =
@@ -61,7 +53,7 @@ bool Hack::ResetViewAngles() {
 }
 
 /*
-    brief: Aimbot v1; aims at center mass rather than the head. 
+    brief: Aimbot v1; aims at center mass rather than the head.
     Loops through the ent state array rather than the CEnt array, so also slow.
 */
 bool Hack::AimAtClosestZombie() {
@@ -152,8 +144,9 @@ bool Hack::AimAtClosestZombieHead() {
   int ClosestZombieNumber = -1;
 
   for (int i = 0; i < Hack::AliveZombieVector.size(); i++) {
-    float CurrentZombieDistance = VecDistance(
-        Hack::LocalPlayerCamera->Origin, Hack::AliveZombieVector[i].HeadPosition);
+    float CurrentZombieDistance =
+        VecDistance(Hack::LocalPlayerCamera->Origin,
+                    Hack::AliveZombieVector[i].HeadPosition);
 
     if (CurrentZombieDistance < ClosestZombieDistance) {
       ClosestZombieDistance = CurrentZombieDistance;
