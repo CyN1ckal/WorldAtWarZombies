@@ -122,23 +122,17 @@ bool Draw::DrawHealthBar(IDirect3DDevice9 *dev) {
   int HealthBarHeight = 24;
   int HealthBarOffsetFromBottom = 24;
 
-  D3DRECT BackgroundRect = {CenterScreen.x - HealthBarWidth / 2,
-                            ScreenDimensions.y - HealthBarOffsetFromBottom -
-                                HealthBarHeight,
-                            CenterScreen.x + HealthBarWidth / 2,
-                            ScreenDimensions.y - HealthBarOffsetFromBottom};
-  dev->Clear(1, &BackgroundRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET,
-             D3DCOLOR_ARGB(255, 125, 125, 125), 0, 0);
+  Draw::DrawRectPerf(dev, CenterScreen.x - HealthBarWidth / 2,
+                     ScreenDimensions.y - HealthBarOffsetFromBottom -
+                         HealthBarHeight,
+                     HealthBarWidth, HealthBarHeight, D3DCOLOR_RGBA(255, 255, 255, 55));
 
   int HealthInPixels = floor(PercentageMaxHealth * HealthBarWidth);
 
-  D3DRECT HealtRect = {CenterScreen.x - HealthBarWidth / 2,
-                       ScreenDimensions.y - HealthBarOffsetFromBottom -
-                           HealthBarHeight,
-                       CenterScreen.x - HealthBarWidth / 2 + HealthInPixels,
-                       ScreenDimensions.y - HealthBarOffsetFromBottom};
-  dev->Clear(1, &HealtRect, D3DCLEAR_TARGET | D3DCLEAR_TARGET,
-             D3DCOLOR_ARGB(255, 0, 255, 0), 0, 0);
+  Draw::DrawRectPerf(
+      dev, CenterScreen.x - HealthBarWidth / 2,
+      ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight,
+      HealthInPixels, HealthBarHeight, D3DCOLOR_RGBA(0, 255, 0, 90));
 
   RECT rect;
   SetRect(&rect, CenterScreen.x - HealthBarWidth / 2,
@@ -150,7 +144,7 @@ bool Draw::DrawHealthBar(IDirect3DDevice9 *dev) {
                   Hack::Local_Player->MaxHealth);
   Draw::pFont[0]->DrawText(NULL, HealthBarString.c_str(), -1, &rect,
                            DT_CENTER | DT_VCENTER,
-                           D3DCOLOR_ARGB(255, 255, 0, 0));
+                           D3DCOLOR_RGBA(255, 0, 0, 90));
 
   return true;
 }
@@ -176,7 +170,7 @@ bool Draw::DrawZombieCount(IDirect3DDevice9 *dev) {
 
   Draw::pFont[0]->DrawText(NULL, ZombieCountString.c_str(), -1, &rect,
                            DT_CENTER | DT_VCENTER,
-                           D3DCOLOR_ARGB(255, 255, 0, 0));
+                           D3DCOLOR_RGBA(255, 0, 0, 155));
   return true;
 }
 
@@ -433,9 +427,9 @@ bool Draw::VerticalLineESP(IDirect3DDevice9 *pD3DDevice) {
                              Hack::RefDef->Width, Hack::RefDef->Height))
       continue;
 
-    Draw::DrawLinePerf(
-        pD3DDevice, OriginPositionScreenCoordinates.x,
-        OriginPositionScreenCoordinates.y, HeadPositionScreenCoordinates.x,
+    Draw::DrawLinePerf(pD3DDevice, OriginPositionScreenCoordinates.x,
+                       OriginPositionScreenCoordinates.y,
+                       HeadPositionScreenCoordinates.x,
                        HeadPositionScreenCoordinates.y,
                        D3DCOLOR_RGBA(MyImGui::ZombieVerticalLineColor_RGBA.r,
                                      MyImGui::ZombieVerticalLineColor_RGBA.g,
