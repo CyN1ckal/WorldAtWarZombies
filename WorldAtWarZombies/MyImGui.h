@@ -7,7 +7,11 @@ struct RGBA_Struct {
 class MyImGui {
 public:
   static bool Initialized;
-  static bool ShowMyWindow();
+  static bool ShowMyWindows();
+  static bool DrawColorPickerWindow();
+  static bool DrawVisualWindow();
+  static bool DrawCombatWindow();
+  static bool DrawDebugWindow();
   static bool Initialize(LPDIRECT3DDEVICE9 pD3DDevice);
 
   static bool UpdateColors();

@@ -120,8 +120,6 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     Config::MasterImgui = !Config::MasterImgui;
   }
 
-
-
   /*
     brief: ImGui implementation area
   */
@@ -130,12 +128,10 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
 
   ImGui::NewFrame();
 
-
   if (Config::MasterImgui) {
     MyImGui::UpdateColors();
-    MyImGui::ShowMyWindow();
+    MyImGui::ShowMyWindows();
   }
-  
 
   ImGui::EndFrame();
   /*
@@ -154,7 +150,7 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
       Draw::VerticalLineESP(pD3DDevice);
 
     if (Config::TracerLines)
-      Draw::DrawZombieTracers(pD3DDevice,DrawTracerType::Origin);
+      Draw::DrawZombieTracers(pD3DDevice, DrawTracerType::Origin);
 
     if (Config::TypeTracers)
       Draw::DrawTypeTracers(pD3DDevice, (EntityType)Config::TypeNumber);
@@ -210,21 +206,42 @@ HRESULT APIENTRY Hook::GetStreamSource_Hook(
 }
 
 /*
+    brief: Reload_Maybe function hook. Dumping parameters.
+*/
+Reload_Maybe_Template Reload_Maybe_Original = nullptr;
+int __stdcall Hook::Reload_Maybe_Hooked(DWORD* LocalPlayer, DWORD *Unknown1,
+                                        DWORD *Unknown2) {
+  printf("\n");
+  std::cout << LocalPlayer << std::endl;
+  std::cout << Unknown1 << std::endl;
+  std::cout << Unknown2 << std::endl;
+  return Reload_Maybe_Original(LocalPlayer, Unknown1, Unknown2);
+}
+
+/*
         brief: Enabling hooks which arent DirectX
 */
+void *Hook::Reload_MaybeFunction;
 void Hook::EnableMiscHooks() {
   PrintToConsoleFunction = (void *)Offsets::PrintToConsoleOffset;
   MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked,
                 reinterpret_cast<LPVOID *>(&PrintToConsole_Original));
   MH_EnableHook(PrintToConsoleFunction);
+
   PrintRawToConsoleFunction = (void *)Offsets::PrintRawToConsoleOffset;
   MH_CreateHook(PrintRawToConsoleFunction, &PrintRawToConsole_Hooked,
                 reinterpret_cast<LPVOID *>(&PrintRawToConsole_Original));
   MH_EnableHook(PrintRawToConsoleFunction);
+
   WndProcFunction = (void *)(Hack::WaW_BaseAddress + Offsets::WndProcOffset);
   MH_CreateHook(WndProcFunction, &WndProc_Hooked,
                 reinterpret_cast<LPVOID *>(&WndProc_Original));
   MH_EnableHook(WndProcFunction);
+
+  Reload_MaybeFunction = (void *)(Offsets::ReloadMaybeOffset);
+  MH_CreateHook(Reload_MaybeFunction, &Reload_Maybe_Hooked,
+                reinterpret_cast<LPVOID *>(&Reload_Maybe_Original));
+  MH_EnableHook(Reload_MaybeFunction);
 }
 
 /*

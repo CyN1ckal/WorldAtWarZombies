@@ -132,7 +132,7 @@ bool Draw::DrawHealthBar(IDirect3DDevice9 *dev) {
   Draw::DrawRectPerf(
       dev, CenterScreen.x - HealthBarWidth / 2,
       ScreenDimensions.y - HealthBarOffsetFromBottom - HealthBarHeight,
-      HealthInPixels, HealthBarHeight, D3DCOLOR_RGBA(0, 255, 0, 90));
+      HealthInPixels, HealthBarHeight, D3DCOLOR_RGBA(0, 255, 0, 255));
 
   RECT rect;
   SetRect(&rect, CenterScreen.x - HealthBarWidth / 2,
@@ -144,7 +144,7 @@ bool Draw::DrawHealthBar(IDirect3DDevice9 *dev) {
                   Hack::Local_Player->MaxHealth);
   Draw::pFont[0]->DrawText(NULL, HealthBarString.c_str(), -1, &rect,
                            DT_CENTER | DT_VCENTER,
-                           D3DCOLOR_RGBA(255, 0, 0, 90));
+                           D3DCOLOR_RGBA(255, 0, 0, 255));
 
   return true;
 }

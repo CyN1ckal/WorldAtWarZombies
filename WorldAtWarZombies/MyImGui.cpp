@@ -2,6 +2,10 @@
 
 bool Config::VerticalLineESP;
 
+/*
+    brief: Updates the RGB_A colors from the ImVec4. Called when the menu is
+   open.
+*/
 bool MyImGui::UpdateColors() {
   MyImGui::MenuThemeColor_RGBA = {
       static_cast<int>(MyImGui::MenuThemeColor.x * 255),
@@ -24,10 +28,10 @@ bool MyImGui::UpdateColors() {
   return 1;
 }
 
-bool MyImGui::ShowMyWindow() {
-  /*
-    brief: Color Picker Window
-  */
+/*
+    brief: Draw color picker window
+*/
+bool MyImGui::DrawColorPickerWindow() {
   ImGui::SetNextWindowPos({50, 400}, ImGuiCond_FirstUseEver);
 
   ImGui::Begin("Color Picker", 0, ImGuiWindowFlags_AlwaysAutoResize);
@@ -41,10 +45,29 @@ bool MyImGui::ShowMyWindow() {
                     ImGuiColorEditFlags_DisplayRGB);
 
   ImGui::End();
+  return 1;
+}
 
-  /*
-    brief: Visuals Tab
-  */
+/*
+    brief: Draw combat window
+*/
+bool MyImGui::DrawCombatWindow() {
+  ImGui::SetNextWindowPos({400, 100}, ImGuiCond_FirstUseEver);
+
+  ImGui::Begin("Combat", 0, ImGuiWindowFlags_AlwaysAutoResize);
+
+  if (ImGui::Button("Toggle Infinite Ammo")) {
+    Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);
+  }
+
+  ImGui::End();
+  return 1;
+}
+
+/*
+    brief: Draw visual window
+*/
+bool MyImGui::DrawVisualWindow() {
   ImGui::SetNextWindowPos({50, 100}, ImGuiCond_FirstUseEver);
 
   ImGui::Begin("Visuals", 0, ImGuiWindowFlags_AlwaysAutoResize);
@@ -58,27 +81,72 @@ bool MyImGui::ShowMyWindow() {
   ImGui::Checkbox("Debug Visuals", &Config::DebugVisuals);
 
   ImGui::End();
+  return 1;
+}
 
-  /*
-    brief: Combat Tab
-  */
-  ImGui::SetNextWindowPos({400, 100}, ImGuiCond_FirstUseEver);
+bool MyImGui::DrawDebugWindow() {
+  ImGui::Begin("Debug Window");
 
-  ImGui::Begin("Combat", 0, ImGuiWindowFlags_AlwaysAutoResize);
+  if (GetAsyncKeyState(VK_DELETE) & 1) {
 
-  if (ImGui::Button("Toggle Infinite Ammo")) {
-    Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);
+    // Hack::Reload_Maybe_FunctionCall((DWORD *)0x0351DF50);
+    //  Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
+
+    
+      
+    //  __asm {
+    //      mov eax, 0x7
+    //      mov ebx, 0x04DBFE30
+    //      mov ecx, 0x00000006
+    //      mov esi, 0x0351DF50
+    //      mov edi, 0x00B66354
+    //}
+
+    DWORD LocalPlayer = 0x0351DF50;
+    DWORD WeaponBase = 0x00B66354;
+    DWORD Unknown = 0x0041F7A4;
+    //Hack::Reload_Maybe_FunctionCall((DWORD *)LocalPlayer, (DWORD *)WeaponBase,
+    //                                (DWORD *)Unknown);
+    __asm {
+          mov eax, 0x7
+          mov ebx, 0x046E5DD0
+          mov ecx, 0x00000006
+          mov esi, 0x018ED068
+          mov edi, 0x00B66354
+    }
+    Hack::Reload_Maybe_FunctionCall((DWORD *)LocalPlayer, (DWORD *)WeaponBase,
+                                    (DWORD *)Unknown);
+  }
+  if (ImGui::Button("Call Reload")) {
   }
 
   ImGui::End();
+  return 1;
+}
+
+/*
+    brief: Shows all of my main ImGui windows
+*/
+bool MyImGui::ShowMyWindows() {
+
+  MyImGui::DrawColorPickerWindow();
+
+  MyImGui::DrawCombatWindow();
+
+  MyImGui::DrawVisualWindow();
+
+  MyImGui::DrawDebugWindow();
 
   return true;
 }
 
+/*
+    brief: Run on the initial setup of ImGui. Does DirectX stuff and sets
+   initial colors
+*/
 ImVec4 MyImGui::MenuThemeColor;
 ImVec4 MyImGui::ZombieTracerColor;
 ImVec4 MyImGui::ZombieVerticalLineColor;
-
 bool MyImGui::Initialize(LPDIRECT3DDEVICE9 pD3DDevice) {
   D3DDEVICE_CREATION_PARAMETERS CP;
   pD3DDevice->GetCreationParameters(&CP);
