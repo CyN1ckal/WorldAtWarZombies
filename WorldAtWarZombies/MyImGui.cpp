@@ -60,6 +60,8 @@ bool MyImGui::DrawCombatWindow() {
     Hack::ToggleInfiniteAmmo(!Config::InfiniteAmmo);
   }
 
+  ImGui::Checkbox("Silent Reload", &Config::SilentReload);
+
   ImGui::End();
   return 1;
 }
@@ -87,38 +89,7 @@ bool MyImGui::DrawVisualWindow() {
 bool MyImGui::DrawDebugWindow() {
   ImGui::Begin("Debug Window");
 
-  if (GetAsyncKeyState(VK_DELETE) & 1) {
 
-    // Hack::Reload_Maybe_FunctionCall((DWORD *)0x0351DF50);
-    //  Hack::PrintToConsole(16, (int)"^1CyNickal Testing: %s\n", "");
-
-    
-      
-    //  __asm {
-    //      mov eax, 0x7
-    //      mov ebx, 0x04DBFE30
-    //      mov ecx, 0x00000006
-    //      mov esi, 0x0351DF50
-    //      mov edi, 0x00B66354
-    //}
-
-    DWORD LocalPlayer = 0x0351DF50;
-    DWORD WeaponBase = 0x00B66354;
-    DWORD Unknown = 0x0041F7A4;
-    //Hack::Reload_Maybe_FunctionCall((DWORD *)LocalPlayer, (DWORD *)WeaponBase,
-    //                                (DWORD *)Unknown);
-    __asm {
-          mov eax, 0x7
-          mov ebx, 0x046E5DD0
-          mov ecx, 0x00000006
-          mov esi, 0x018ED068
-          mov edi, 0x00B66354
-    }
-    Hack::Reload_Maybe_FunctionCall((DWORD *)LocalPlayer, (DWORD *)WeaponBase,
-                                    (DWORD *)Unknown);
-  }
-  if (ImGui::Button("Call Reload")) {
-  }
 
   ImGui::End();
   return 1;

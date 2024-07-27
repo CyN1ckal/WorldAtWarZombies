@@ -239,3 +239,12 @@ bool Hack::FillZombieVector() {
 
   return 1;
 }
+
+bool Hack::SilentReload() {
+  DWORD LocalPlayer_4 = 0x018ED068;
+  __asm {
+          mov esi, LocalPlayer_4
+  }
+  Hack::Reload_FunctionCall();
+  return 1;
+}

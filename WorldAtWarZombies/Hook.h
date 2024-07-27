@@ -14,7 +14,7 @@ typedef int(APIENTRY *PrintToConsole_Template)(int a1, int a2, ...);
 typedef void(APIENTRY *PrintErrorToConsole_Template)(int a1, int a2, ...);
 typedef void(__cdecl *PrintRawToConsole_Template)(int a1, const char *a2,
                                                   int a3);
-typedef int(__stdcall *Reload_Maybe_Template)(DWORD* LocalPlayer, DWORD *Unknown1, DWORD *Unknown2);
+typedef int(__stdcall *Reload_Template)();
 
 typedef int(__stdcall *WndProc_Template)(HWND hWnd, UINT Msg, int wParam,
                                          LPARAM lParam);
@@ -38,7 +38,7 @@ public:
   static void *PrintToConsoleFunction;
   static void *PrintRawToConsoleFunction;
   static void *PrintToScreen_MaybeFunction;
-  static void *Reload_MaybeFunction;
+  static void *Reload_Function;
 
   static void *WndProcFunction;
   static IDirect3DDevice9 *pD3DDevice;
@@ -64,8 +64,7 @@ public:
                                       LPARAM lParam);
   static HRESULT __stdcall BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
-  static int __stdcall Reload_Maybe_Hooked(DWORD* LocalPlayer, DWORD *Unknown1,
-                                           DWORD *Unknown2);
+  static int __stdcall Reload_Hooked();
 
   // "Helper" Functions. Not exactly hooking but used in class.
   static HWND GetProcessWindow();

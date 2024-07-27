@@ -3,7 +3,7 @@ typedef int(APIENTRY *PrintToConsole_Template)(int a1, int a2, ...);
 typedef void(APIENTRY *PrintErrorToConsole_Template)(int a1, int a2, ...);
 typedef void(__cdecl *PrintRawToConsole_Template)(int a1, const char *a2,
                                                   int a3);
-typedef int(__stdcall *Reload_Maybe_Template)(DWORD* LocalPlayer, DWORD* Unknown1, DWORD* Unknown2);
+typedef int(__stdcall *Reload_Template)();
 
 class Hack {
 public:
@@ -22,8 +22,8 @@ public:
   // Static address declarations
   static inline uintptr_t WaW_BaseAddress = (uintptr_t)GetModuleHandle(NULL);
 
-  static inline Reload_Maybe_Template Reload_Maybe_FunctionCall =
-      reinterpret_cast<Reload_Maybe_Template>(Offsets::ReloadMaybeOffset);
+  static inline Reload_Template Reload_FunctionCall =
+      reinterpret_cast<Reload_Template>(Offsets::ReloadMaybeOffset);
 
   static inline refdef_t *RefDef =
       reinterpret_cast<refdef_t *>(WaW_BaseAddress + Offsets::RefDefOffset);
@@ -50,6 +50,7 @@ public:
   static bool AimAtClosestZombie();
   static bool AimAtClosestZombieHead();
   static bool FillZombieVector();
+  static bool SilentReload();
 
 private:
 };

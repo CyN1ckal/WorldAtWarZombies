@@ -11,6 +11,7 @@ class Config {
   static bool InfiniteAmmo;
   static bool DebugVisuals;
   static bool VerticalLineESP;
+  static bool SilentReload;
 
   static bool Initialize();
 };
