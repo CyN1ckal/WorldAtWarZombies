@@ -272,7 +272,7 @@ bool Hack::ShootGun() {
 
   ShootWrapper_Template ShootWrapper = (ShootWrapper_Template)0x00420A60;
 
-  ShootWrapper(LocalPlayer_4, 1);
+  ShootWrapper(LocalPlayer_4, 2);
 
   return 1;
 }
