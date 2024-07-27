@@ -86,11 +86,17 @@ bool MyImGui::DrawVisualWindow() {
   return 1;
 }
 
+/*
+    brief: My debug ImGui window with WIP stuff
+*/
 bool MyImGui::DrawDebugWindow() {
-  ImGui::Begin("Debug Window");
 
 
+ ImGui::Begin("Debug Window");
 
+  if (GetAsyncKeyState(VK_DELETE) & 1) {
+    Hack::ShootGun();
+  }
   ImGui::End();
   return 1;
 }

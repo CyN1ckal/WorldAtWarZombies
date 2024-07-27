@@ -158,6 +158,55 @@ bool Hack::AimAtClosestZombieHead() {
 
   Vector3 TargetPos = Hack::AliveZombieVector[ClosestZombieNumber].HeadPosition;
 
+  Hack::AimAtPosition(TargetPos);
+
+  return 1;
+}
+
+/*
+    brief: Updates the ZombieVector in the Hack class
+*/
+bool Hack::FillZombieVector() {
+  Hack::AliveZombieVector.clear();
+
+  CEntBaseArray_New *CEntArray = *(
+      CEntBaseArray_New **)(Hack::WaW_BaseAddress + Offsets::CEntArraypOffset);
+
+  for (int i = 0; i < MAX_CENTS; i++) {
+
+    if (CEntArray->CEntArray[i].NextEntState == nullptr)
+      continue;
+    if (Hack::EntityStateArray
+            ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
+            .CurrentHealth < 1)
+      continue;
+
+    Hack::AliveZombieVector.push_back(CEntArray->CEntArray[i]);
+  }
+
+  return 1;
+}
+
+/*
+    brief: Automatically reloads whatever weapon you are holding. I had to do
+   in-line ASM because regardless of whatever calling convention I used I was
+   getting a crash...
+   I am probably just being stupid but this works and I learned how C++ asm
+   works... Win for me
+*/
+bool Hack::SilentReload() {
+  DWORD LocalPlayer_4 = 0x018ED068;
+  __asm {
+          mov esi, LocalPlayer_4
+  }
+  Hack::Reload_FunctionCall();
+  return 1;
+}
+
+/*
+    brief: Aim the local player at 3d position
+*/
+bool Hack::AimAtPosition(Vector3 TargetPos) {
   Vector3 LocalPos = Hack::LocalPlayerCamera->Origin;
 
   Vector3 PositionDelta = {TargetPos.x - LocalPos.x, TargetPos.y - LocalPos.y,
@@ -212,39 +261,18 @@ bool Hack::AimAtClosestZombieHead() {
         LocalPlayerWritableAngles->Pitch -
         Hack::LocalPlayerCamera->CenterDifference_Pitch - Degrees;
   }
-
   return 1;
 }
 
 /*
-    brief: Updates the ZombieVector in the Hack class
+    brief: calls the "Shoot" function; but the bullets that get shot do no damage...
 */
-bool Hack::FillZombieVector() {
-  Hack::AliveZombieVector.clear();
-
-  CEntBaseArray_New *CEntArray = *(
-      CEntBaseArray_New **)(Hack::WaW_BaseAddress + Offsets::CEntArraypOffset);
-
-  for (int i = 0; i < MAX_CENTS; i++) {
-
-    if (CEntArray->CEntArray[i].NextEntState == nullptr)
-      continue;
-    if (Hack::EntityStateArray
-            ->EntityStateArray[CEntArray->CEntArray[i].EntStateArrayNumber]
-            .CurrentHealth < 1)
-      continue;
-
-    Hack::AliveZombieVector.push_back(CEntArray->CEntArray[i]);
-  }
-
-  return 1;
-}
-
-bool Hack::SilentReload() {
+bool Hack::ShootGun() {
   DWORD LocalPlayer_4 = 0x018ED068;
-  __asm {
-          mov esi, LocalPlayer_4
-  }
-  Hack::Reload_FunctionCall();
+
+  ShootWrapper_Template ShootWrapper = (ShootWrapper_Template)0x00420A60;
+
+  ShootWrapper(LocalPlayer_4, 1);
+
   return 1;
 }

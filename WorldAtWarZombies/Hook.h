@@ -16,8 +16,11 @@ typedef void(__cdecl *PrintRawToConsole_Template)(int a1, const char *a2,
                                                   int a3);
 typedef int(__stdcall *Reload_Template)();
 
+typedef void **(__cdecl *ShootWrapper_Template)(int a1, int a2);
+
 typedef int(__stdcall *WndProc_Template)(HWND hWnd, UINT Msg, int wParam,
                                          LPARAM lParam);
+
 typedef HRESULT(__stdcall *BeginScene_Template)(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
 /*
@@ -39,6 +42,8 @@ public:
   static void *PrintRawToConsoleFunction;
   static void *PrintToScreen_MaybeFunction;
   static void *Reload_Function;
+  static void *Shoot_Function;
+  static void *ShootWrapper_Function;
 
   static void *WndProcFunction;
   static IDirect3DDevice9 *pD3DDevice;
@@ -65,6 +70,9 @@ public:
   static HRESULT __stdcall BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
   static int __stdcall Reload_Hooked();
+
+  static char __cdecl Shoot_Hooked(int LocalPlayer, int One,
+                                   int WeaponPtrArrayIndex);
 
   // "Helper" Functions. Not exactly hooking but used in class.
   static HWND GetProcessWindow();

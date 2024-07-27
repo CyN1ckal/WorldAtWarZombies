@@ -5,6 +5,9 @@ typedef void(__cdecl *PrintRawToConsole_Template)(int a1, const char *a2,
                                                   int a3);
 typedef int(__stdcall *Reload_Template)();
 
+typedef char(__cdecl *Shoot_Template)(int LocalPlayer, int One,
+                                      int WeaponPtrArrayIndex);
+
 class Hack {
 public:
   // Function Call Declarations
@@ -23,7 +26,11 @@ public:
   static inline uintptr_t WaW_BaseAddress = (uintptr_t)GetModuleHandle(NULL);
 
   static inline Reload_Template Reload_FunctionCall =
-      reinterpret_cast<Reload_Template>(Offsets::ReloadMaybeOffset);
+      reinterpret_cast<Reload_Template>(WaW_BaseAddress + Offsets::ReloadMaybeOffset);
+
+  static inline Shoot_Template Shoot_FunctionCall =
+      reinterpret_cast<Shoot_Template>(Hack::WaW_BaseAddress +
+                                       Offsets::ShootOffset);
 
   static inline refdef_t *RefDef =
       reinterpret_cast<refdef_t *>(WaW_BaseAddress + Offsets::RefDefOffset);
@@ -40,7 +47,7 @@ public:
                                  Offsets::EntityStateArrayppOffset);
 
   static inline WritableAngles *LocalPlayerWritableAngles =
-      (WritableAngles *)(WaW_BaseAddress + Offsets::WritableAngleOffset);
+      (WritableAngles *)(Hack::WaW_BaseAddress + Offsets::WritableAngleOffset);
 
   static std::vector<CEntity> AliveZombieVector;
 
@@ -51,6 +58,8 @@ public:
   static bool AimAtClosestZombieHead();
   static bool FillZombieVector();
   static bool SilentReload();
+  static bool AimAtPosition(Vector3 Target);
+  static bool ShootGun();
 
 private:
 };

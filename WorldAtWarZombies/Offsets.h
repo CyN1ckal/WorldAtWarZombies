@@ -19,4 +19,5 @@ static uintptr_t EntityStateArrayppOffset = 0xBE1C0;
 static uintptr_t CameraClasspOffset = 0x22EC;
 static uintptr_t CEntArraypOffset = 0x14F5DA4;
 static uintptr_t ReloadMaybeOffset = 0x1E350; 
+static uintptr_t ShootOffset = 0x1E5E0; 
 }  // namespace Offsets
