@@ -16,9 +16,9 @@ To Use:
 Compile the project in x86 Release, and inject into CoDWaW.exe with your favorite injector.
 
 Keybinds:
-Insert = Menu Key
-Delete = Eject Cheat
-Caps Lock = Aimbot
-VK_XBUTTON2 (Front Thumb Button) = Aimbot
+- Insert = Menu Key
+- Delete = Eject Cheat
+- Caps Lock = Aimbot
+- VK_XBUTTON2 (Front Thumb Button) = Aimbot
 
 [<img src="https://img.youtube.com/vi/M2EvaEc1Dms/maxresdefault.jpg" width="50%">](https://youtu.be/M2EvaEc1Dms)
