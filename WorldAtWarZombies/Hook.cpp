@@ -169,7 +169,8 @@ HRESULT APIENTRY Hook::EndScene_Hook(const LPDIRECT3DDEVICE9 pDevice) {
     if (Config::InfiniteAmmo)
       Draw::InfiniteAmmoText(pD3DDevice);
 
-    if (GetAsyncKeyState(VK_XBUTTON2) && AimbotDelayInt % 2 == 0) {
+    if ((GetAsyncKeyState(VK_XBUTTON2) || GetAsyncKeyState(VK_CAPITAL)) &&
+        AimbotDelayInt % 2 == 0) {
       Hack::AimAtClosestZombieHead();
     }
     AimbotDelayInt++;
@@ -211,43 +212,18 @@ HRESULT APIENTRY Hook::GetStreamSource_Hook(
 }
 
 /*
-    brief: Reload function hook. Dumping parameters.
-*/
-Reload_Template Reload_Original = nullptr;
-int __stdcall Hook::Reload_Hooked() { return Reload_Original(); }
-
-
-/*
-    brief: Shoot hook. Needed to hook it because I am trying to call it... and failing...
-*/
-Shoot_Template Shoot_Original = nullptr;
-char __cdecl Hook::Shoot_Hooked(int LocalPlayer, int One, int WeaponPtrArrayIndex) {
-
-
-  return Shoot_Original(LocalPlayer, One, WeaponPtrArrayIndex);
-}
-
-ShootWrapper_Template ShootWrapper_Original = nullptr;
-void** __cdecl ShootWrapper_Hooked(int a1, int a2)
-{
-  std::cout << a1 << std::endl;
-  std::cout << std::hex << a2 << std::endl;
-  return ShootWrapper_Original(a1, a2);
-}
-
-/*
         brief: Enabling hooks which arent DirectX
 */
-void *Hook::Reload_Function;
-void *Hook::Shoot_Function;
 void *Hook::ShootWrapper_Function;
 void Hook::EnableMiscHooks() {
-  PrintToConsoleFunction = (void *)(Hack::WaW_BaseAddress + Offsets::PrintToConsoleOffset);
+  PrintToConsoleFunction =
+      (void *)(Hack::WaW_BaseAddress + Offsets::PrintToConsoleOffset);
   MH_CreateHook(PrintToConsoleFunction, &PrintToConsole_Hooked,
                 reinterpret_cast<LPVOID *>(&PrintToConsole_Original));
   MH_EnableHook(PrintToConsoleFunction);
 
-  PrintRawToConsoleFunction = (void *)(Hack::WaW_BaseAddress + Offsets::PrintRawToConsoleOffset);
+  PrintRawToConsoleFunction =
+      (void *)(Hack::WaW_BaseAddress + Offsets::PrintRawToConsoleOffset);
   MH_CreateHook(PrintRawToConsoleFunction, &PrintRawToConsole_Hooked,
                 reinterpret_cast<LPVOID *>(&PrintRawToConsole_Original));
   MH_EnableHook(PrintRawToConsoleFunction);
@@ -256,23 +232,7 @@ void Hook::EnableMiscHooks() {
   MH_CreateHook(WndProcFunction, &WndProc_Hooked,
                 reinterpret_cast<LPVOID *>(&WndProc_Original));
   MH_EnableHook(WndProcFunction);
-
-  Reload_Function = (void *)(Hack::WaW_BaseAddress + Offsets::ReloadMaybeOffset);
-  MH_CreateHook(Reload_Function, &Reload_Hooked,
-                reinterpret_cast<LPVOID *>(&Reload_Original));
-  MH_EnableHook(Reload_Function);
-
-  Shoot_Function = (void *)(Hack::WaW_BaseAddress + Offsets::ShootOffset);
-  MH_CreateHook(Shoot_Function, &Shoot_Hooked,
-                reinterpret_cast<LPVOID *>(&Shoot_Original));
-  MH_EnableHook(Shoot_Function);
-
-  ShootWrapper_Function = (void *)(Hack::WaW_BaseAddress + 0x20A60);
-  MH_CreateHook(ShootWrapper_Function, &ShootWrapper_Hooked,
-                reinterpret_cast<LPVOID *>(&ShootWrapper_Original));
-  MH_EnableHook(ShootWrapper_Function);
 }
-
 
 /*
         brief: Creates and initializes the DirectX hooks

@@ -265,7 +265,8 @@ bool Hack::AimAtPosition(Vector3 TargetPos) {
 }
 
 /*
-    brief: calls the "Shoot" function; but the bullets that get shot do no damage...
+    brief: calls the "Shoot" function; but the bullets that get shot do no
+   damage... Useless but kinda funny
 */
 bool Hack::ShootGun() {
   DWORD LocalPlayer_4 = 0x018ED068;

@@ -41,8 +41,6 @@ public:
   static void *PrintToConsoleFunction;
   static void *PrintRawToConsoleFunction;
   static void *PrintToScreen_MaybeFunction;
-  static void *Reload_Function;
-  static void *Shoot_Function;
   static void *ShootWrapper_Function;
 
   static void *WndProcFunction;
@@ -69,10 +67,6 @@ public:
                                       LPARAM lParam);
   static HRESULT __stdcall BeginScene_Hooked(LPDIRECT3DDEVICE9 m_pD3Ddev);
 
-  static int __stdcall Reload_Hooked();
-
-  static char __cdecl Shoot_Hooked(int LocalPlayer, int One,
-                                   int WeaponPtrArrayIndex);
 
   // "Helper" Functions. Not exactly hooking but used in class.
   static HWND GetProcessWindow();
