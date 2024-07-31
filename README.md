@@ -21,4 +21,4 @@ Delete = Eject Cheat
 Caps Lock = Aimbot
 VK_XBUTTON2 (Front Thumb Button) = Aimbot
 
-<video src="https://youtu.be/M2EvaEc1Dms?si=q_thO1nBc9q4KqhX" width=400/>
+<video src="https://youtu.be/M2EvaEc1Dms?si=q_thO1nBc9q4KqhX" width=400></video>
