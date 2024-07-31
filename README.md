@@ -1,4 +1,5 @@
 [<img src="https://img.youtube.com/vi/M2EvaEc1Dms/maxresdefault.jpg" width="75%">](https://youtu.be/M2EvaEc1Dms)
+(Click the Image for video)
 
 A mod for Call of Duty: World At War zombies. 
 
